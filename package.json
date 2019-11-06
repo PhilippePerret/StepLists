@@ -1,0 +1,35 @@
+{
+  "name": "StepLists",
+  "productName": "StepListes",
+  "version": "0.0.1",
+  "description": "Gestion des travaux par listes de tâches",
+  "main": "main.js",
+  "scripts": {
+    "test": "echo \"Error: no test specified\" && exit 1",
+    "start": "electron .",
+    "start-update":"UPDATE_MAIN_HTML=true electron .",
+    "build": "electron-packager . --platform=darwin --icon=icons/app --asar --out=built --overwrite",
+    "dev": "electron . --debug"
+  },
+  "repository": {
+    "type": "git",
+    "url": "git+https://github.com/PhilippePerret/StepLists.git"
+  },
+  "keywords": [
+  ],
+  "author": "_LASTNAME_, FIRSTNAME_",
+  "license": "ISC",
+  "bugs": {
+    "url": "https://github.com/PhilippePerret/StepLists/issues"
+  },
+  "homepage": "https://github.com/PhilippePerret/StepLists#readme",
+  "devDependencies": {
+    "electron": "^6.0.0",
+    "electron-packager": "^14.0.4"
+  },
+  "dependencies": {
+    "exec": "^0.2.1",
+    "glob": "^7.1.4",
+    "mysql2": "^1.6.5"
+  }
+}
