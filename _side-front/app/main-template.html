@@ -10,6 +10,7 @@ __WARNING__
 
     <section id="header">
       <div id="header-buttons" class="fright">
+        <button type="button" onclick="List.showAll.call(List)">Listes</button>
         <button type="button" onclick="Aide.toggle.call(Aide)">Aide</button>
       </div>
     </section>
@@ -28,10 +29,50 @@ __WARNING__
       <div id="lists-panel" class="noDisplay">
         <h1 class="panel-title">Listes de travail</h1>
 
-      </div>
-      <div id="items-panel" class="noDisplay">
-        <h1 class="panel-title">Liste <span class="list-name">---</span></h1>
+        <!--
+          LISTE DES LISTES
+        -->
+        <div id="div-lists" class="listbox-oslike">
+          <ul id="lists">
+            <li>Première liste</li>
+            <li>Deuxième liste</li>
+            <li class="selected">Troisième liste</li>
+          </ul>
+          <div class="btn btn-plus">+</div>
+          <div class="btn btn-moins">−</div>
+        </div>
 
+        <!--
+          FORMULAIRE D'ÉDITION D'UNE LISTE
+        -->
+        <form id="list-form" class="noDisplay" method="post" style="width:500px;">
+          <div class="row">
+            <label for="list-titre">Titre</label>
+            <input type="text" id="list-titre" value="">
+          </div>
+          <div class="row">
+            <label for="list-description">Description</label>
+            <textarea id="list-description" rows="8" cols="80"></textarea>
+          </div>
+          <div class="row">
+            <label for="list-steps">Étapes</label>
+            <textarea id="list-steps" rows="8" cols="80"></textarea>
+          </div>
+          <div class="row buttons">
+            <button type="button" name="Soumettre" id="btn-save-list">Soumettre</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="items-panel" class="noDisplay">
+        <h1 class="panel-title"><span class="list-name">---</span></h1>
+        <div id="div-list-items" class="listbox-oslike">
+          <ul id="item-list">
+
+          </ul>
+          <div class="btn btn-plus">+</div>
+          <div class="btn btn-moins">−</div>
+        </div>
       </div>
       <div id="preferences-panel" class="noDisplay">
         <h1 class="panel-title">Préférences</h1>

@@ -3,6 +3,7 @@ form {
   border:1px solid #BBBBBB;
   border-radius: 1em;
   width: 90%;
+  max-width:600px;
 }
 form * {
   font-size:inherit;
@@ -17,6 +18,12 @@ form div.title {
 form div.row:not(.buttons) {
   border:1px solid #EEEEEE;
   margin-top:8px;
+}
+
+form div.row > label {
+  display:block;
+  color:#777777;
+  font-style:italic;
 }
 form div.row > input,
 form div.row > textarea,

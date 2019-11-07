@@ -1,0 +1,13 @@
+div#div-list-items.listbox-oslike {
+  width:calc(100%-18px);
+  min-width:calc(100%-18px);
+  border:1px solid green;
+}
+
+div#div-list-items.listbox-oslike ul#item-list {
+  width:100%;
+}
+
+div#div-list-items.listbox-oslike ul#item-list span.step {
+  border-right:1px solid red;
+}

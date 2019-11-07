@@ -14,11 +14,15 @@
     <link rel="stylesheet" href="system/css/common.css" />
 <link rel="stylesheet" href="system/css/form.css" />
 <link rel="stylesheet" href="system/css/ui.css" />
+<link rel="stylesheet" href="app/css/item.css" />
+<link rel="stylesheet" href="app/css/list.css" />
+<link rel="stylesheet" href="app/css/macos-like.css" />
   </head>
   <body>
 
     <section id="header">
       <div id="header-buttons" class="fright">
+        <button type="button" onclick="List.showAll.call(List)">Listes</button>
         <button type="button" onclick="Aide.toggle.call(Aide)">Aide</button>
       </div>
     </section>
@@ -37,10 +41,50 @@
       <div id="lists-panel" class="noDisplay">
         <h1 class="panel-title">Listes de travail</h1>
 
-      </div>
-      <div id="items-panel" class="noDisplay">
-        <h1 class="panel-title">Liste <span class="list-name">---</span></h1>
+        <!--
+          LISTE DES LISTES
+        -->
+        <div id="div-lists" class="listbox-oslike">
+          <ul id="lists">
+            <li>Première liste</li>
+            <li>Deuxième liste</li>
+            <li class="selected">Troisième liste</li>
+          </ul>
+          <div class="btn btn-plus">+</div>
+          <div class="btn btn-moins">−</div>
+        </div>
 
+        <!--
+          FORMULAIRE D'ÉDITION D'UNE LISTE
+        -->
+        <form id="list-form" class="noDisplay" method="post" style="width:500px;">
+          <div class="row">
+            <label for="list-titre">Titre</label>
+            <input type="text" id="list-titre" value="">
+          </div>
+          <div class="row">
+            <label for="list-description">Description</label>
+            <textarea id="list-description" rows="8" cols="80"></textarea>
+          </div>
+          <div class="row">
+            <label for="list-steps">Étapes</label>
+            <textarea id="list-steps" rows="8" cols="80"></textarea>
+          </div>
+          <div class="row buttons">
+            <button type="button" name="Soumettre" id="btn-save-list">Soumettre</button>
+          </div>
+        </form>
+      </div>
+
+      <div id="items-panel" class="noDisplay">
+        <h1 class="panel-title"><span class="list-name">---</span></h1>
+        <div id="div-list-items" class="listbox-oslike">
+          <ul id="item-list">
+
+          </ul>
+          <div class="btn btn-plus">+</div>
+          <div class="btn btn-moins">−</div>
+        </div>
       </div>
       <div id="preferences-panel" class="noDisplay">
         <h1 class="panel-title">Préférences</h1>
@@ -57,6 +101,7 @@
     <script type="text/javascript" src="system/js/main.js"></script>
     <script type="text/javascript" src="system/js/first-required/__requires.js"></script>
 <script type="text/javascript" src="system/js/first-required/aide.js"></script>
+<script type="text/javascript" src="system/js/first-required/App.js"></script>
 <script type="text/javascript" src="system/js/first-required/Calibre.js"></script>
 <script type="text/javascript" src="system/js/first-required/Flash.js"></script>
 <script type="text/javascript" src="system/js/first-required/handies.js"></script>
@@ -66,6 +111,7 @@
 <script type="text/javascript" src="system/js/first-required/UI.js"></script>
 <script type="text/javascript" src="app/js/first-required/Export.js"></script>
 <script type="text/javascript" src="system/js/then-required/dbtables/CREATE_TABLES.js"></script>
+<script type="text/javascript" src="app/js/then-required/App.js"></script>
 <script type="text/javascript" src="app/js/then-required/classes/Item.js"></script>
 <script type="text/javascript" src="app/js/then-required/classes/List.js"></script>
 <script type="text/javascript" src="app/js/then-required/UI.js"></script>

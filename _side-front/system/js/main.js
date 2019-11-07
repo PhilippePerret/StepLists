@@ -5,12 +5,6 @@ const {app}   = require('electron').remote
 const exec    = require('child_process').exec
 const { clipboard } = require('electron')
 
-const App = {
-  async init(){
-    UI.init()
-  }
-}
-
 const Sys = {
 }
 
