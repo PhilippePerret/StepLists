@@ -1,17 +1,10 @@
 body {
-  display: grid;
-  grid-template-columns: 43% 29% 28%;
-  grid-template-rows: 40px auto 32px;
-  width: 100%;
-  min-height:814px;
-  /* border: 1px dashed red; */
   margin:0;
   padding:0;
+  margin-top:40px;
 }
 
 body > section#header {
-  grid-column:1/4;
-  grid-row:1;
   background-color: #182863;
   color: #449eaf;
   padding-left:1em;
@@ -29,8 +22,6 @@ body > section#header h1 {
 }
 
 body > section#footer {
-  grid-column: 1/4;
-  grid-row:3;
   position: fixed;
   bottom:0; left:0;
   width:calc(100% - 16px);
@@ -63,37 +54,6 @@ body > section#footer span#message.green {
 
 section#footer button#btn-search {
   width: 90px;
-}
-
-body > section#left-column,
-body > section#middle-column,
-body > section#right-column
-{
-  /* border: 1px dashed green; */
-  grid-row:2;
-  width: 100%;
-  z-index: 1;
-}
-
-body > section#middle-column,
-body > section#right-column
-{
-  /* border: 1px dashed green; */
-  /* max-height:500px; */
-  max-height:750px;
-  overflow-y: scroll;
-}
-
-body > section#left-column {
-  grid-column: 1;
-  border-right: 1px solid black;
-}
-body > section#middle-column {
-  grid-column: 2;
-  padding-left:1em;
-}
-body > section#right-column {
-  grid-column: 3;
 }
 
 body > div#aide {

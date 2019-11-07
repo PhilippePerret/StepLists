@@ -12,13 +12,31 @@ __WARNING__
       <div id="header-buttons" class="fright">
         <button type="button" onclick="Aide.toggle.call(Aide)">Aide</button>
       </div>
-      <h1>_NODEJS_FRAMEWORK_</h1>
     </section>
 
     <section id="content">
       <!--
         METTRE ICI LE CONTENU PRINCIPAL DE LA FENÊTRE
       -->
+      <div id="main-panel">
+        <h1 class="panel-title">Panneau principal</h1>
+        <ul>
+          <li onclick="UI.showPanel('listsPanel')">Listes</li>
+          <li onclick="UI.showPanel('prefsPanel')">Préférences</li>
+        </ul>
+      </div>
+      <div id="lists-panel" class="noDisplay">
+        <h1 class="panel-title">Listes de travail</h1>
+
+      </div>
+      <div id="items-panel" class="noDisplay">
+        <h1 class="panel-title">Liste <span class="list-name">---</span></h1>
+
+      </div>
+      <div id="preferences-panel" class="noDisplay">
+        <h1 class="panel-title">Préférences</h1>
+
+      </div>
     </section>
 
     <section id="footer">

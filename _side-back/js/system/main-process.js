@@ -36,7 +36,8 @@ global.MainBuild = {
   }
 , buildCSSTags(){
     this.CSSTags = []
-    this.buildCSSTagsOfFolder(this.pathOf('_side-front/css'))
+    this.buildCSSTagsOfFolder(this.pathOf('_side-front/system/css'))
+    this.buildCSSTagsOfFolder(this.pathOf('_side-front/app/css'))
   }
 
 , buildJSTagsOfFolder(folder){
@@ -79,7 +80,7 @@ Object.defineProperties(MainBuild,{
     !!! NE PAS MODIFIER CE FICHIER !!!
     (cf. le manuel pour modifier la page)
     *************************************
-    
+
   -->`
 }}
 })

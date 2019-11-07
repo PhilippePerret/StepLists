@@ -4,14 +4,16 @@
     !!! NE PAS MODIFIER CE FICHIER !!!
     (cf. le manuel pour modifier la page)
     *************************************
-    
+
   -->
 <!DOCTYPE html>
 <html lang="fr" dir="ltr">
   <head>
     <meta charset="utf-8">
     <title>_NODEJS_FRAMEWORK_</title>
-    
+    <link rel="stylesheet" href="system/css/common.css" />
+<link rel="stylesheet" href="system/css/form.css" />
+<link rel="stylesheet" href="system/css/ui.css" />
   </head>
   <body>
 
@@ -19,13 +21,31 @@
       <div id="header-buttons" class="fright">
         <button type="button" onclick="Aide.toggle.call(Aide)">Aide</button>
       </div>
-      <h1>_NODEJS_FRAMEWORK_</h1>
     </section>
 
     <section id="content">
       <!--
         METTRE ICI LE CONTENU PRINCIPAL DE LA FENÊTRE
       -->
+      <div id="main-panel">
+        <h1 class="panel-title">Panneau principal</h1>
+        <ul>
+          <li onclick="UI.showPanel('listsPanel')">Listes</li>
+          <li onclick="UI.showPanel('prefsPanel')">Préférences</li>
+        </ul>
+      </div>
+      <div id="lists-panel" class="noDisplay">
+        <h1 class="panel-title">Listes de travail</h1>
+
+      </div>
+      <div id="items-panel" class="noDisplay">
+        <h1 class="panel-title">Liste <span class="list-name">---</span></h1>
+
+      </div>
+      <div id="preferences-panel" class="noDisplay">
+        <h1 class="panel-title">Préférences</h1>
+
+      </div>
     </section>
 
     <section id="footer">
@@ -46,6 +66,9 @@
 <script type="text/javascript" src="system/js/first-required/UI.js"></script>
 <script type="text/javascript" src="app/js/first-required/Export.js"></script>
 <script type="text/javascript" src="system/js/then-required/dbtables/CREATE_TABLES.js"></script>
+<script type="text/javascript" src="app/js/then-required/classes/Item.js"></script>
+<script type="text/javascript" src="app/js/then-required/classes/List.js"></script>
+<script type="text/javascript" src="app/js/then-required/UI.js"></script>
 
   </body>
 </html>

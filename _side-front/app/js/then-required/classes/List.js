@@ -9,7 +9,21 @@ class List {
     *   CLASSE
     *
   *** --------------------------------------------------------------------- */
+  /**
+    Méthode principale qui affiche toutes les listes (et permet d'en
+    créer de nouvelles)
+  **/
+  static showAll(){
+    UI.showLists()
+  }
 
+  /**
+    Méthode de classe qui affiche la liste d'identifiant ID (donc ses items,
+    et permet de les gérer)
+  **/
+  static show(list_id){
+
+  }
 
   /** ---------------------------------------------------------------------
     *   INSTANCE

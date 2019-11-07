@@ -10,3 +10,6 @@
 .italic { font-style: italic;}
 .warning {color:red;}
 .notice { color: blue; }
+
+.noDisplay,
+.notDisplayed {display:none}
