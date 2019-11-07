@@ -66,6 +66,17 @@ function initialize () {
       require('devtron').install()
     }
 
+    var dbMethod
+    if (process.env.FORCE_REBUILD_DB/* quand on utilise npm run update-db */) {
+      // On force la reconstruction des tables (si elles sont définies)
+      dbMethod = "MySql2.createTablesIfRequired(true)"
+    } else {
+      // On checke pour voir si les tables existent
+      dbMethod = "MySql2.checkTables()"
+
+    }
+    mainWindow.webContents.executeJavaScript(dbMethod).then(res => console.log(res))
+
     // Quand on ferme la fenêtre, on détruit l'instance
     mainWindow.on('closed', () => {
       mainWindow = null

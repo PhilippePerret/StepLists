@@ -16,6 +16,4 @@ const Sys = {
 
 document.addEventListener('DOMContentLoaded', function(event) {
   App.init.call(App)
-  // On checke pour voir si les tables existent
-  MySql2.checkTables()
 })

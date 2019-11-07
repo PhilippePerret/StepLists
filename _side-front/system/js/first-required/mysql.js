@@ -84,6 +84,31 @@ const MySql2 = {
     return lii
   }
 
+    /**
+      Méthode appelée pour tout reconstruire (les tables)
+    **/
+  , async rebuildAll(){
+      console.log("-> MySql2.rebuildAll")
+      if (false === fs.existsSync(DBTABLES_DATA_ABSPATH)){
+        console.error("Aucune table n'est définie, je ne peux pas reconstruire la DB…")
+        return
+      }
+      let tableList = await this.tableNames()
+      console.log("Liste des tables : %s", tableList.join(', '))
+      // Sinon, on prépare la requête qui va détruire toutes les tables
+      if ( tableList.length ) {
+        console.log("Destruction des tables…")
+        var req = `DROP TABLE IF EXISTS ${tableList.join(', ')}`
+        console.log("Requête à exécuter : ", req)
+        var res = await this.execute(req)
+        console.log("Destruction des tables opérée avec succès.")
+      }
+      let dbtables = require(DBTABLES_DATA_PATH)
+      for ( var dtable of dbtables ){
+        await new DBTable(dtable).build()
+      }
+      console.log("Reconstruction des tables OK")
+  }
   /**
     Méthode qui vérifie, au lancement de l'application, que les tables
     soient bien construites et les construit le cas échéant.
@@ -110,6 +135,7 @@ const MySql2 = {
     cf. le manuel
   **/
 , async createTablesIfRequired(force){
+    console.log("force = ", force)
     if (false === fs.existsSync(DBTABLES_DATA_ABSPATH)) {
       return console.error("Le fichier '%s' n'existe pas. Impossible de créer les tables dans la base de données. Merci de consulter le manuel.", path.resolve(DBTABLES_DATA_ABSPATH))
     }
@@ -150,7 +176,7 @@ class DBTable {
   }
 
   async forceRebuild(){
-    var codeBefore = `DROP TABLE IF EXISTS ${this.name};${CR}`
+    var codeBefore = `DROP TABLE IF EXISTS ${this.name};`
     await this.build(codeBefore)
   }
 
@@ -159,7 +185,9 @@ class DBTable {
   **/
   async build(codeBefore){
     if (!codeBefore) codeBefore = ''
-    await MySql2.execute(codeBefore+this.creationCode)
+    let codeComplet = codeBefore+this.creationCode
+    console.log("Code complet:\n%s", codeComplet)
+    await MySql2.execute(codeComplet)
     console.log("Construction de la table '%s' exécutée avec succès.", this.name)
   }
 
