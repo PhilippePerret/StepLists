@@ -5,6 +5,8 @@
   Gestion des textes
 
 **/
+const CR = `
+`;
 const Text = {
   formate(str, format){
     format = format || 'markdown'
