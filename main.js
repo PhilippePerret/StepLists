@@ -69,10 +69,10 @@ function initialize () {
     var dbMethod
     if (process.env.FORCE_REBUILD_DB/* quand on utilise npm run update-db */) {
       // On force la reconstruction des tables (si elles sont définies)
-      dbMethod = "MySql2.createTablesIfRequired(true)"
+      dbMethod = "MySql2.rebuildAll.call(MySql2)"
     } else {
       // On checke pour voir si les tables existent
-      dbMethod = "MySql2.checkTables()"
+      dbMethod = "MySql2.checkTables.call(MySql2)"
 
     }
     mainWindow.webContents.executeJavaScript(dbMethod).then(res => console.log(res))

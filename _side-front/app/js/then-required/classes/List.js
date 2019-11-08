@@ -42,12 +42,14 @@ class List {
   static get form(){return document.querySelector('form#list-form')}
   static get btnSaveList(){return document.querySelector('form#list-form button#btn-save-list')}
   static get btnCancelList(){return document.querySelector('form#list-form button#btn-cancel-save-list')}
+  static get idField(){return document.querySelector('form#list-form input#list-id')}
 
   static showForm(){this.form.classList.remove('noDisplay')}
   static hideForm(){this.form.classList.add('noDisplay')}
   static resetForm(){
+    // console.log("-> List::resetForm")
     for(var prop of ['id','titre','description','steps']){
-      document.querySelector(`form#list-form #list-${prop}`)
+      document.querySelector(`form#list-form #list-${prop}`).value = ''
     }
   }
 
@@ -82,7 +84,7 @@ class List {
     Il s'agit soit d'une création soit d'une édition
   **/
   static async saveList(){
-    if (this.idField.value == "") { await this.createList() }
+    if (this.idField.value == '') { await this.createList() }
     else {await this.updateList()}
   }
   static async cancelSaveList(){
@@ -109,7 +111,8 @@ class List {
   }
 
   static updateList(){
-
+    if (!this.checkDataValidity()) return
+    this.current.update(this.provData)
     this.hideForm()
   }
 
@@ -222,13 +225,41 @@ class List {
   // Méthode qui crée la liste
   async create(){
     var req = "INSERT INTO lists (titre, description, steps, created_at) VALUES (?,?,?, NOW())"
-    var res = await MySql2.execute(req, [newList.titre, newList.description, newList.steps])
+    var res = await MySql2.execute(req, [this.titre, this.description, this.steps])
   }
   // Méthode qui actualise la liste
-  async update(){
-
+  async update(newValeurs){
+    // On regarde les champs qui ont changé
+    var valeurs = []
+    var columns = []
+    var realNew = {}
+    for(var prop in newValeurs){
+      if (this[prop] != newValeurs[prop]){
+        columns.push(`${prop} = ?`)
+        valeurs.push(newValeurs[prop])
+        Object.assign(realNew, {[prop]: newValeurs[prop]})
+      }
+    }
+    columns.push("updated_at = ?")
+    valeurs.push(new Date())
+    Object.assign(realNew, {updated_at: new Date()})
+    valeurs.push(this.id)
+    var request = `UPDATE Lists SET ${columns.join(', ')} WHERE id = ?`
+    var res = await MySql2.execute(request, valeurs)
+    // On dispatche les nouvelles valeurs dans cette instance
+    for (var prop in realNew) { this[prop] = realNew[prop] }
+    // On update l'affichage si nécessaire
+    this.updateLI()
+    return true
   }
 
+  // Actualisation du LI de la liste dans le DOM (et observation)
+  updateLI(){
+    let oldLi = this.li
+    delete this._li
+    oldLi.replaceWith(this.li)
+    this.observe()
+  }
 
   // Méthode qui construit la liste dans la liste des listes
   build(){
@@ -261,10 +292,6 @@ class List {
     List.resetForm()
     for(var prop of ['id','titre','description','steps']){
       var val = this[prop] || ''
-      console.log("%s = ", prop, val, typeof val)
-      if ( prop == 'steps'){
-        val = val.split(';').join(CR)
-      }
       document.querySelector(`form#list-form #list-${prop}`).value = val
     }
   }
@@ -332,19 +359,19 @@ class List {
   **/
   get id(){return this.data.id}
   get titre(){return this.data.titre}
-  set titre(v){this.data.titre = v; this.setModified()}
+  set titre(v){this.data.titre = v}
   get description(){return this.data.description}
-  set description(v){this.data.description = v; this.setModified()}
+  set description(v){this.data.description = v}
   get sorted_items(){return this.data.sorted_items}
-  set sorted_items(v){this.data.sorted_items = v; this.setModified()}
+  set sorted_items(v){this.data.sorted_items = v}
   get type(){return this.data.type}
-  set type(v){this.data.type = v; this.setModified()}
+  set type(v){this.data.type = v}
   get steps(){return this.data.steps}
-  set steps(v){this.data.steps = v; this.setModified()}
+  set steps(v){this.data.steps = v}
   get created_at(){return this.data.created_at}
-  set created_at(v){this.data.created_at = v; this.setModified()}
+  set created_at(v){this.data.created_at = v}
   get updated_at(){return this.data.updated_at}
-  set updated_at(v){this.data.updated_at = v; this.setModified()}
+  set updated_at(v){this.data.updated_at = v}
 
   // Pour marquer la donnée modifiée
   setModified(v){v = v || false; this.modified = v}

@@ -127,26 +127,6 @@ const MySql2 = {
       }
       this.tablesHasBeenChecked = true
   }
-  /**
-    Méthode qui permet de créer les tables quand elles n'ont pas
-    été encore créées ou qu'elles n'existe pas.
-    Si +force+ est true, on force la création (on la détruit si
-    elle existe et on la reconstruit)
-    cf. le manuel
-  **/
-, async createTablesIfRequired(force){
-    console.log("force = ", force)
-    if (false === fs.existsSync(DBTABLES_DATA_ABSPATH)) {
-      return console.error("Le fichier '%s' n'existe pas. Impossible de créer les tables dans la base de données. Merci de consulter le manuel.", path.resolve(DBTABLES_DATA_ABSPATH))
-    }
-    let dbtables = require(DBTABLES_DATA_PATH)
-    // console.log("Données des tables à construire le cas échéant = ", dbtables)
-    for ( var dtable of dbtables ) {
-      var table = new DBTable(dtable)
-      if ( force ) {table.forceRebuild()}
-      else {table.buildIfNotExists()}
-    }
-  }
 }
 Object.defineProperties(MySql2,{
 database:{

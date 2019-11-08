@@ -3,7 +3,6 @@ if ('undefined' === typeof UI){ UI = {} }
 Object.assign(UI,{
   class: 'UI'
 , showPanel(panelName){
-    console.log("Je dois montrer le panneau '%s'", panelName)
     this.hideCurrentPanel()
     this.currentPanel = this[panelName]
     this.currentPanel.classList.remove('noDisplay')

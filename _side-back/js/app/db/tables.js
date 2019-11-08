@@ -20,8 +20,8 @@ const DB_Tables = [
           }
         , {name:'description', type:'TEXT'}
         , {name:'type', type:'INTEGER(1)'}
-        , {name:'steps', type:'BLOB'}
-        , {name:'sorted_items', type:'BLOB'}
+        , {name:'steps', type:'TEXT'}
+        , {name:'sorted_items', type:'TEXT'}
         , {name:'created_at', type:'DATE'}
         , {name:'updated_at', type:'DATE'}
       ]
@@ -38,7 +38,7 @@ const DB_Tables = [
           }
         , {name:'description',  type:'TEXT'}
         , {name:'list_id',      type:'INTEGER'}
-        , {name:'steps',        type:'BLOB'}
+        , {name:'steps',        type:'TEXT'}
         , {name:'expectedNext', type:'DATE'}
         , {name:'action1',      type:'TEXT'}
         , {name:'action2',      type:'TEXT'}

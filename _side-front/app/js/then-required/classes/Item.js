@@ -119,7 +119,7 @@ class Item {
 
   static resetForm(){
     var prop
-    for(prop of ['id','titre','description','expectedNext']){
+    for(prop of ['id','titre','description']){
       // Surtout pas list_id !
       document.querySelector(`#item-${prop}`).value = ''
     }
