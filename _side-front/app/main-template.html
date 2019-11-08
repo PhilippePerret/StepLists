@@ -73,7 +73,43 @@ __WARNING__
           <div class="btn btn-plus">+</div>
           <div class="btn btn-moins">−</div>
         </div>
+
+        <!--
+          FORMULAIRE D'ÉDITION D'UN ITEM DE LISTE
+        -->
+        <form id="item-form" enctype="multipart/form-data" class="noDisplay">
+          <div class="row">
+            <label for="item-titre">Titre</label>
+            <input type="text" id="item-titre" value="">
+          </div>
+          <div class="row">
+            <label for="item-description">Description</label>
+            <textarea id="item-description" rows="8" cols="80"></textarea>
+          </div>
+          <div class="row">
+            <label for="item-expectedNext">Attendu après (jours)</label>
+            <input type="text" id="item-expectedNext" value="">
+          </div>
+          <div class="row">
+            <label for="item-action1-type">Action bouton 1</label>
+            <select class="action-type" id="item-action1-type" onchange="TODO">
+              <option value="file">Ouvrir fichier</option>
+              <option value="folder">Ouvrir dossier</option>
+              <option value="url">Ouvrir URL</option>
+              <option value="code">Jouer le code</option>
+            </select>
+            <button type="button" id="btn-choose-file" class="noDisplay">Choisir…</button>
+            <input type="hidden" id="item-action1-file">
+            <input type="text" id="item-action1" value="">
+          </div>
+          <!-- TODO Reproduire pour bouton 2 et 3 -->
+        </form>
+
       </div>
+
+
+
+
       <div id="preferences-panel" class="noDisplay">
         <h1 class="panel-title">Préférences</h1>
 

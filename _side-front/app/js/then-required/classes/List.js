@@ -18,7 +18,13 @@ class List {
       , btnMoins  = document.querySelector('div#div-lists div.btn-moins')
     btnPlus.addEventListener('click',this.addList.bind(this))
     btnMoins.addEventListener('click',this.removeSelectedList.bind(this))
+  }
 
+  /**
+    Retourne l'instance List de la liste d'identifiant +list_id+
+  **/
+  static getById(list_id){
+    return this.listsById[list_id]
   }
 
   static addList(ev){
@@ -31,19 +37,15 @@ class List {
   static async createList(){
     let form = document.querySelector('form#list-form')
     let btnSave = document.querySelector('button#btn-save-list')
-    form.classList.add('noDisplay')
-    btnSave.removeEventListener('click', this.createList.bind(this))
     // On essaie de créer la liste
     // On récupère ses données
     var newList = new List({})
     for( var prop of ['titre','description','steps']){
       newList[prop] = document.querySelector(`#list-${prop}`).value
     }
-    console.log("new list : ", newList)
     newList.steps = newList.steps.split(CR).join(';')
-    console.log("étapes : ", newList.steps)
 
-    // TODO Il faut d'abord vérifier qu'elle soit valide
+    // Il faut d'abord vérifier qu'elle soit valide
     if ( newList.isValid() ){
       // TODO On l'enregistre dans la base
       var req = "INSERT INTO lists (titre, description, steps, created_at) VALUES (?,?,?, NOW())"
@@ -51,6 +53,8 @@ class List {
       // On l'affiche dans la liste TODO : au début
       let listUL = document.querySelector('UL#lists')
       listUL.appendChild(newList.li)
+      form.classList.add('noDisplay')
+      btnSave.removeEventListener('click', this.createList.bind(this))
     } else {
       console.error("--- Liste invalide ---")
       alert("Liste invalide, impossible de la créer (cf. en console)")
@@ -77,18 +81,27 @@ class List {
     Méthode pour peupler la liste des listes
   **/
   static async peuple(){
-    this.listes = {}
-    // On doit récupérer la liste des listes
-    let listes = await MySql2.execute('SELECT * FROM lists ORDER BY titre')
+    if ( undefined === this.listsById){
+      await this.loadLists()
+    }
     // On fait un item LI par liste
     let listUL = document.querySelector('UL#lists')
     listUL.innerHTML = ''
-    for ( var liste /* TextRow */ of listes ) {
-      var iList = new List(liste)
+    for ( var iList /* TextRow */ of Object.values(this.listsById) ) {
       listUL.appendChild(iList.li)
       iList.observe()
-      Object.assign(this.listes, iList)
     }
+  }
+
+  static async loadLists(){
+    var lists = {}
+    // On doit récupérer la liste des listes
+    let listes = await MySql2.execute('SELECT * FROM lists ORDER BY titre')
+    for(var liste of listes){
+      var iList = new List(liste)
+      Object.assign(lists, {[iList.id]: iList})
+    }
+    this.listsById = lists
   }
 
   // L'instance List courante
@@ -173,6 +186,15 @@ class List {
   get items(){
     return this._items
   }
+
+  // Retourne la liste des étapes (comme Array)
+  // Note : dans la base, c'est un string
+  get aSteps(){
+    if ( undefined === this._asteps ) {
+      this._asteps = this.steps.split(';')
+    } return this._asteps
+  }
+
   /**
     | Méthodes de données fixe
   **/
