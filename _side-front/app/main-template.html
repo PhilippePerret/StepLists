@@ -40,12 +40,17 @@ __WARNING__
           </ul>
           <div class="btn btn-plus">+</div>
           <div class="btn btn-moins">−</div>
+          <div class="other-btns btns-selected hidden">
+            <div class="btn btn-edit"> 📝 </div>
+            <div class="btn btn-show"> 🧮 </div>
+          </div>
         </div>
 
         <!--
           FORMULAIRE D'ÉDITION D'UNE LISTE
         -->
         <form id="list-form" class="noDisplay" method="post" style="width:500px;">
+          <input type="hidden" name="list[id]" id="list-id" value="">
           <div class="row">
             <label for="list-titre">Titre</label>
             <input type="text" id="list-titre" value="">
@@ -59,6 +64,7 @@ __WARNING__
             <textarea id="list-steps" rows="8" cols="80"></textarea>
           </div>
           <div class="row buttons">
+            <button type="button" name="Cancel" id="btn-cancel-save-list">Renoncer</button>
             <button type="button" name="Soumettre" id="btn-save-list">Soumettre</button>
           </div>
         </form>

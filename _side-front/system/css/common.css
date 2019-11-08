@@ -13,3 +13,5 @@
 
 .noDisplay,
 .notDisplayed {display:none}
+.hidden {visibility:hidden;}
+.visible {visibility:visible;}

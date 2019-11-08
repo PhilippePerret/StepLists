@@ -16,8 +16,16 @@ class List {
   static init(){
     let btnPlus   = document.querySelector('div#div-lists div.btn-plus')
       , btnMoins  = document.querySelector('div#div-lists div.btn-moins')
+      , btnEdit   = document.querySelector('div#div-lists div.btn-edit')
+      , btnShow   = document.querySelector('div#div-lists div.btn-show')
     btnPlus.addEventListener('click',this.addList.bind(this))
     btnMoins.addEventListener('click',this.removeSelectedList.bind(this))
+    btnEdit.addEventListener('click',this.editSelectedList.bind(this))
+    btnShow.addEventListener('click',this.showSelectedList.bind(this))
+
+    // Les éléments du formulaire
+    this.btnSaveList.addEventListener('click', this.saveList.bind(this))
+
   }
 
   /**
@@ -27,16 +35,62 @@ class List {
     return this.listsById[list_id]
   }
 
-  static addList(ev){
-    let form = document.querySelector('form#list-form')
-    let btnSave = document.querySelector('button#btn-save-list')
-    btnSave.addEventListener('click', this.createList.bind(this))
-    form.classList.remove('noDisplay')
+  /**
+    | Éléments de l'interface
+  **/
+  static get form(){return document.querySelector('form#list-form')}
+  static get btnSaveList(){return document.querySelector('form#list-form button#btn-save-list')}
+  static get btnCancelList(){return document.querySelector('form#list-form button#btn-cancel-save-list')}
+
+  static showForm(){this.form.classList.remove('noDisplay')}
+  static hideForm(){this.form.classList.add('noDisplay')}
+  static resetForm(){
+    for(var prop of ['id','titre','description','steps']){
+      document.querySelector(`form#list-form #list-${prop}`)
+    }
+  }
+
+  /**
+    Méthode appelée par le bouton pour afficher les items de la liste
+    courante
+  **/
+  static showSelectedList(ev){
+    this.current.showItems()
     return stopEvent(ev)
   }
+  /**
+    Méthode appelée quand on veut créer une nouveau liste (bouton "+")
+  **/
+  static addList(ev){
+    this.showForm()
+    this.resetForm()
+    return stopEvent(ev)
+  }
+  /**
+    Méthode appelée quand on veut éditer une liste (bouton "📝")
+  **/
+  static editSelectedList(ev){
+    this.showForm()
+    this.resetForm()
+    // TODO Mettre les valeurs de la liste dans les champs
+    console.error("Il faut implémenter le peuplement du formulaire de liste")
+    // this.current.edit()
+    return stopEvent(ev)
+  }
+
+  /**
+    Méthode appelée par le bouton "Enregistrer" du formulaire
+    Il s'agit soit d'une création soit d'une édition
+  **/
+  static async saveList(){
+    if (this.idField.value == "") { await this.createList() }
+    else {await this.updateList()}
+  }
+  static async cancelSaveList(){
+    this.hideForm()
+  }
+
   static async createList(){
-    let form = document.querySelector('form#list-form')
-    let btnSave = document.querySelector('button#btn-save-list')
     // On essaie de créer la liste
     // On récupère ses données
     var newList = new List({})
@@ -47,19 +101,24 @@ class List {
 
     // Il faut d'abord vérifier qu'elle soit valide
     if ( newList.isValid() ){
-      // TODO On l'enregistre dans la base
+      // On l'enregistre dans la base
       var req = "INSERT INTO lists (titre, description, steps, created_at) VALUES (?,?,?, NOW())"
       var res = await MySql2.execute(req, [newList.titre, newList.description, newList.steps])
       // On l'affiche dans la liste TODO : au début
       let listUL = document.querySelector('UL#lists')
       listUL.appendChild(newList.li)
-      form.classList.add('noDisplay')
-      btnSave.removeEventListener('click', this.createList.bind(this))
+      this.hideForm()
     } else {
       console.error("--- Liste invalide ---")
       alert("Liste invalide, impossible de la créer (cf. en console)")
     }
   }
+
+  static updateList(){
+
+    this.hideForm()
+  }
+
   static removeSelectedList(ev){
     console.log("Destruction de liste demandée")
     return stopEvent(ev)
@@ -107,16 +166,16 @@ class List {
   // L'instance List courante
   static get current(){return this._current}
   static set current(v){
+    if (this._current){
+      this._current.li.classList.remove('selected')
+    }
     this._current = v
+    // On règle le titre partout où il est utilisé
     document.querySelector('.list-name').innerHTML = v.titre
-  }
-
-  /**
-    Méthode de classe qui affiche la liste d'identifiant ID (donc ses items,
-    et permet de les gérer)
-  **/
-  static show(list_id){
-
+    // On met le lit en exergue
+    v.li.classList.add('selected')
+    // On affiche les boutons qui permettent de gérer la liste
+    document.querySelector('div#div-lists .btns-selected').classList.remove('hidden')
   }
 
   /** ---------------------------------------------------------------------
@@ -132,8 +191,13 @@ class List {
   **/
   observe(){
     this.li.addEventListener('click', this.onClick.bind(this))
+    this.li.addEventListener('dblclick', this.onDblClick.bind(this))
   }
   onClick(ev){
+    List.current = this
+    return stopEvent(ev)
+  }
+  onDblClick(ev){
     List.current = this
     this.showItems()
     return stopEvent(ev)

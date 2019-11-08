@@ -31,6 +31,29 @@
   background-color:#9af58f;
 }
 
+.listbox-oslike .other-btns {
+  display:grid;
+  grid-template-columns: 30pt 30pt 30pt auto;
+  grid-template-rows: auto;
+  line-height:30pt;
+}
+.listbox-oslike .other-btns .btn {grid-row:1}
+.listbox-oslike .other-btns .btn.btn-edit {
+  grid-column:1;
+}
+.listbox-oslike .other-btns .btn.btn-show {
+  grid-column:2;
+}
+
+.listbox-oslike .btn {
+  display:inline-block;
+  color: #666666;
+  border-right:1px solid #CCCCCC;
+  text-align:center;
+  cursor:pointer;
+  /* height:28px; */
+}
+
 .listbox-oslike .btn:active {
   background-color:green;
   color:white;
@@ -39,11 +62,6 @@
 .listbox-oslike .btn-moins
 {
   font-size: 20pt;
-  color: #666666;
-  line-height:28pt;
-  border-right:1px solid #CCCCCC;
-  text-align:center;
-  cursor:pointer;
 }
 .listbox-oslike .btn-plus {
   grid-column:1;
