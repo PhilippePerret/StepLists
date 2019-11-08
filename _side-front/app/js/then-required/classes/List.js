@@ -25,6 +25,7 @@ class List {
 
     // Les éléments du formulaire
     this.btnSaveList.addEventListener('click', this.saveList.bind(this))
+    this.btnCancelList.addEventListener('click',this.cancelSaveList.bind(this))
 
   }
 
@@ -71,10 +72,8 @@ class List {
   **/
   static editSelectedList(ev){
     this.showForm()
-    this.resetForm()
-    // TODO Mettre les valeurs de la liste dans les champs
-    console.error("Il faut implémenter le peuplement du formulaire de liste")
-    // this.current.edit()
+    // Mettre les valeurs de la liste dans les champs
+    this.current.edit()
     return stopEvent(ev)
   }
 
@@ -90,28 +89,23 @@ class List {
     this.hideForm()
   }
 
+  /**
+    Méthode appelée pour créer la nouvelle liste
+  **/
   static async createList(){
     // On essaie de créer la liste
-    // On récupère ses données
-    var newList = new List({})
-    for( var prop of ['titre','description','steps']){
-      newList[prop] = document.querySelector(`#list-${prop}`).value
-    }
-    newList.steps = newList.steps.split(CR).join(';')
 
-    // Il faut d'abord vérifier qu'elle soit valide
-    if ( newList.isValid() ){
-      // On l'enregistre dans la base
-      var req = "INSERT INTO lists (titre, description, steps, created_at) VALUES (?,?,?, NOW())"
-      var res = await MySql2.execute(req, [newList.titre, newList.description, newList.steps])
-      // On l'affiche dans la liste TODO : au début
-      let listUL = document.querySelector('UL#lists')
-      listUL.appendChild(newList.li)
-      this.hideForm()
-    } else {
-      console.error("--- Liste invalide ---")
-      alert("Liste invalide, impossible de la créer (cf. en console)")
-    }
+    // On checke la validité des données en les relevant
+    if (!this.checkDataValidity()) return
+
+    // On crée la nouvelle instance avec les données relevées
+    var newList = new List(this.provData)
+    // On l'enregistre
+    await newList.create()
+    // On l'affiche
+    newList.build()
+    // On ferme le formulaire
+    this.hideForm()
   }
 
   static updateList(){
@@ -157,10 +151,45 @@ class List {
     // On doit récupérer la liste des listes
     let listes = await MySql2.execute('SELECT * FROM lists ORDER BY titre')
     for(var liste of listes){
+      liste.steps = String(liste.steps)
+      if (liste.sorted_items) liste.sorted_items = String(liste.sorted_items)
       var iList = new List(liste)
       Object.assign(lists, {[iList.id]: iList})
     }
     this.listsById = lists
+  }
+
+
+  /**
+    Méthode qui checke la validité des données dans le formulaire
+    que ce soit pour l'édition ou la création
+  **/
+  static checkDataValidity(){
+    var provData = {}
+      , errors = []
+
+    for(var prop of ['id','titre','description','steps']){
+      Object.assign(provData, {[prop]: document.querySelector(`form#list-form #list-${prop}`).value.trim()})
+    }
+    if ( provData.id == ''){delete provData.id}
+    else { provData.id = parseInt(provData.id,10)}
+
+    provData.titre || errors.push("Le titre est requis")
+    if (provData.titre){
+      provData.titre.length > 3 || errors.push("Le titre doit être au moins de 4 lignes.")
+      provData.titre.length < 201 || errors.push("Le titre est trop long (200 lettres max)")
+    }
+    provData.description.length < 65000 || errors.push("La description est trop longue (65000 caractères max)")
+    provData.steps.length > 0 || errors.push("Les étapes doivent être définies.")
+
+    if (errors.length){
+      console.error("Des erreurs sont survenues : ", errors.join(CR))
+      alert("Des erreurs sont survenues, je ne peux pas enregistrer la liste telle quelle. Consulter la console.")
+      return false
+    } else {
+      this.provData = provData
+      return true
+    }
   }
 
   // L'instance List courante
@@ -178,12 +207,33 @@ class List {
     document.querySelector('div#div-lists .btns-selected').classList.remove('hidden')
   }
 
+
+
+
+
   /** ---------------------------------------------------------------------
     *   INSTANCE
     *
   *** --------------------------------------------------------------------- */
   constructor(data){
     this.data = data
+  }
+
+  // Méthode qui crée la liste
+  async create(){
+    var req = "INSERT INTO lists (titre, description, steps, created_at) VALUES (?,?,?, NOW())"
+    var res = await MySql2.execute(req, [newList.titre, newList.description, newList.steps])
+  }
+  // Méthode qui actualise la liste
+  async update(){
+
+  }
+
+
+  // Méthode qui construit la liste dans la liste des listes
+  build(){
+    document.querySelector('UL#lists').appendChild(this.li)
+    this.observe()
   }
 
   /**
@@ -203,6 +253,21 @@ class List {
     return stopEvent(ev)
   }
 
+  /**
+    Méthode pour éditer la liste (peupler le formulaire, qui doit
+    déjà être ouvert)
+  **/
+  edit(){
+    List.resetForm()
+    for(var prop of ['id','titre','description','steps']){
+      var val = this[prop] || ''
+      console.log("%s = ", prop, val, typeof val)
+      if ( prop == 'steps'){
+        val = val.split(';').join(CR)
+      }
+      document.querySelector(`form#list-form #list-${prop}`).value = val
+    }
+  }
   /**
     Méthode qui affiche les items de la liste
   **/
@@ -284,16 +349,4 @@ class List {
   // Pour marquer la donnée modifiée
   setModified(v){v = v || false; this.modified = v}
 
-  /**
-    Méthode qui retourne true si les données de la liste sont valides
-  **/
-  isValid(){
-    var errors = []
-    this.titre != "" || errors.push("Le titre doit être défini")
-    this.steps != [] || errors.push("Il faut impérativement que cette liste ait des étapes.")
-    if ( errors.length ){
-      console.error("Erreurs trouvées dans les données de la liste :", errors)
-    }
-    return errors.length == 0
-  }
 }
