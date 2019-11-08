@@ -147,6 +147,9 @@ class List {
     // Masquer la section des listes
     // et Afficher la section des items
     UI.showPanel('itemsPanel')
+    // On renseigne l'identifiant de liste qui permettra de régler
+    // les list_id des nouveaux items ou items édités
+    document.querySelector('#item-list_id').value = this.id
     // Vider la section des items
     itemList.innerHTML = ""
     // Peupler la section des items
@@ -198,6 +201,7 @@ class List {
   /**
     | Méthodes de données fixe
   **/
+  get id(){return this.data.id}
   get titre(){return this.data.titre}
   set titre(v){this.data.titre = v; this.setModified()}
   get description(){return this.data.description}

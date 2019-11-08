@@ -6,3 +6,15 @@ div#div-lists ul#lists {
 div#div-lists ul#lists li {
   font-size:1.2em;
 }
+
+/*
+    Le formulaire de création/édition d'une liste
+
+ */
+form#list-form {
+  background-color:white;
+  opacity:0.9;
+  position:fixed;
+  top:100px;
+  left:20%;
+}

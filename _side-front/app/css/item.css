@@ -11,3 +11,16 @@ div#div-list-items.listbox-oslike ul#item-list {
 div#div-list-items.listbox-oslike ul#item-list span.step {
   border-right:1px solid red;
 }
+
+
+/*
+    Le formulaire
+
+ */
+form#item-form {
+  background-color:white;
+  opacity:0.9;
+  position:fixed;
+  top:100px;
+  left:20%;
+}
