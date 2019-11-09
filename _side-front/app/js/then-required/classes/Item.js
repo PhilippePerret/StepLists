@@ -65,6 +65,36 @@ class Item {
     this._current.select()
   }
 
+  /** ---------------------------------------------------------------------
+    *   MÉTHODES FORMULAIRE
+    *
+  *** --------------------------------------------------------------------- */
+  static showForm(){
+    this.form.classList.remove('noDisplay')
+    this.formIsVisible = true
+  }
+  static hideForm(){
+    this.form.classList.add('noDisplay')
+    this.formIsVisible = false
+  }
+  static resetForm(){
+    var prop
+    for(prop of ['id','titre','description']){
+      // Surtout pas list_id !
+      document.querySelector(`#item-${prop}`).value = ''
+    }
+    for(var i of [1,2,3]){
+      prop = `action${i}`
+      document.querySelector(`#item-${prop}`).value = ''
+      document.querySelector(`#item-${prop}-type`).selectedIndex = 0
+      var obj = document.querySelector(`#btn-choose-file-${prop}`)
+      obj.innerHTML = 'Choisir…'
+      obj.classList.add('noDisplay')
+      obj = document.querySelector(`#item-${prop}`)
+      obj.innerHTML = 'Choisir…'
+      obj.classList.add('noDisplay')
+    }
+  }
   /**
     Méthode appelée quand on sélectionne dans le menu une action à
     accomplir par le bouton +actionId+ de l'item édité
@@ -116,34 +146,6 @@ class Item {
     }
   }
 
-  static showForm(){
-    this.form.classList.remove('noDisplay')
-    this.formIsVisible = true
-  }
-  static hideForm(){
-    this.form.classList.add('noDisplay')
-    this.formIsVisible = false
-  }
-
-  static resetForm(){
-    var prop
-    for(prop of ['id','titre','description']){
-      // Surtout pas list_id !
-      document.querySelector(`#item-${prop}`).value = ''
-    }
-    for(var i of [1,2,3]){
-      prop = `action${i}`
-      document.querySelector(`#item-${prop}`).value = ''
-      document.querySelector(`#item-${prop}-type`).selectedIndex = 0
-      var obj = document.querySelector(`#btn-choose-file-${prop}`)
-      obj.innerHTML = 'Choisir…'
-      obj.classList.add('noDisplay')
-      obj = document.querySelector(`#item-${prop}`)
-      obj.innerHTML = 'Choisir…'
-      obj.classList.add('noDisplay')
-    }
-  }
-
   static addItemToCurrentList(ev){
     // Si le formulaire est visible, demander à le fermer
     if (this.formIsVisible){
@@ -155,7 +157,6 @@ class Item {
     this.resetForm()
     return stopEvent(ev)
   }
-
 
   /**
     Méthode appelée par le bouton "Enregrister" du formulaire
@@ -195,22 +196,71 @@ class Item {
 
   // Méthode de création du nouvel item
   static createNewItem(){
-    let newItem = new Item({})
-    newItem.getValuesFromForm()
-    if ( newItem.dataAreValid() ) {
-      newItem.createAndDisplay()
-      this.hideForm()
-    }
+    if (!this.checkDataValidity()) return
+    let newItem = new Item(this.provData)
+    newItem.createAndDisplay()
   }
   // Méthode de sauvegarde de l'item édité
   static saveSelectedItem(){
-    console.error("Implémentation de Item::saveSelectedItem requise")
-
+    if (!this.checkDataValidity()) return
+    this.current.update(this.provData)
     this.hideForm()
   }
 
   static select(item){
     this.current = item
+  }
+
+
+  /**
+    Vérifie la validité des données du formulaire.
+    Si OK, les met dans `provData` et retourne true. Sinon,
+    retourne false après avoir affiché le message d'erreur.
+  **/
+  static checkDataValidity(){
+    var errors = []
+    var pData = this.getFormValues()
+    pData.titre || errors.push("Le titre est requis")
+    pData.list_id || errors.push("La liste d'appartenance devrait être définie (list_id)")
+    List.getById(pData.list_id) || errors.push("La liste est inconnue, bizarrement…")
+
+    this.provData = pData
+
+    if (errors.length) {
+      console.error("Des erreurs ont été trouvées : ", errors.join(CR))
+      alert("Des erreurs ont été trouvées (cf. la console)")
+      return false
+    } else {
+      return true
+    }
+  }
+  // Méthode qui récupère les données du formulaire (sans les checker,
+  // en les mettant dans this.provData)
+  static getFormValues(){
+    var fData = {}
+    for(var prop of ['id', 'titre','list_id','description','action1','action2','action3']){
+      fData[prop] = document.querySelector(`#item-${prop}`).value
+    }
+    // Quelques ajustements
+    if ( fData.id != '' ){ // <= édition
+      fData.id = parseInt(fData.id,10)
+    } else {
+      delete fData.id
+    }
+    fData.list_id = parseInt(fData.list_id,10)
+
+    // Il faut ajouter le type aux actions si elles sont définies
+    for(var iAction of [1,2,3]){
+      var prop = `action${iAction}`
+        , type = document.querySelector(`select#item-${prop}-type`).value
+      if ( fData[prop] == "" || type == 'none') {
+        fData[prop] = null
+      } else {
+        fData[prop] = `${type}::${fData[prop]}`
+      }
+    }
+    // console.log("Data from form = ", fData)
+    return fData
   }
 
 
@@ -235,9 +285,12 @@ class Item {
     await MySql2.execute(request, valeurs)
   }
 
-  async update(newValeurs){
-
+  // async update(newValeurs){
+  //   await updateInstance(this, newValeurs)
+  // }
+  afterUpdate(){
     this.decomposeTypeAndValueInActions()
+    this.updateLi()
   }
 
   // Méthode qui construit l'item
@@ -253,7 +306,6 @@ class Item {
   }
 
   onClick(ev){
-    console.log("-> onClick, this = ", this)
     this.select()
     return stopEvent(ev)
   }
@@ -303,8 +355,10 @@ class Item {
             break
           default:
             [btn,field] = [false,true]
-            codeField.value = valueA
         }
+        // Dans tous les cas, même pour un fichier, on met
+        // la valeur dans le champ
+        codeField.value = valueA
         btnChoose.classList[btn?'remove':'add']('noDisplay')
         codeField.classList[field?'remove':'add']('noDisplay')
       }
@@ -329,50 +383,6 @@ class Item {
     }
   }
 
-  // Méthode qui récupère les données du formulaire (sans les checker,
-  // en les mettant dans this.provData)
-  getValuesFromForm(){
-    this.provData = {}
-    for(var prop of ['id', 'titre','list_id','description','action1','action2','action3']){
-      this.provData[prop] = document.querySelector(`#item-${prop}`).value
-    }
-    // Quelques ajustements
-    if ( this.provData.id != '' ){ // <= édition
-      this.provData.id = parseInt(this.provData.id,10)
-    }
-    this.provData.list_id = parseInt(this.provData.list_id,10)
-
-    // Il faut ajouter le type aux actions si elles sont définies
-    for(var i of [1,2,3]){
-      var prop = `action${i}`
-        , type = document.querySelector(`select#item-${prop}-type`).value
-      if ( this.provData[prop] == "" || type == 'none') {
-        this.provData[prop] = null
-      } else {
-        this.provData[prop] = `${type}::${this.provData[prop]}`
-      }
-    }
-    console.log("this.provData = ", this.provData)
-  }
-
-  /**
-    Méthode qui checke la validité des données provisoires
-    Retourne true si les données sont valides, faux dans le
-    cas contraire.
-  **/
-  dataAreValid(){
-    var errors = []
-    this.provData.titre || errors.push("Le titre est requis")
-    List.getById(this.provData.list_id) || errors.push("La liste est inconnue, bizarrement…")
-
-    if (errors.length) {
-      console.error("Des erreurs ont été trouvées : ", errors.join(CR))
-      alert("Des erreurs ont été trouvées (cf. la console)")
-      return false
-    } else {
-      return true
-    }
-  }
 
   // Actualisation du LI dans la fenêtre (listing)
   updateLi(){
@@ -454,3 +464,5 @@ class Item {
   get action3(){return this.data.action3}
   set action3(v){this.data.action3 = v}
 }
+
+Item.prototype.update = updateInstance

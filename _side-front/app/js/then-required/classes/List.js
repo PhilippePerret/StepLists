@@ -227,34 +227,12 @@ class List {
     var req = "INSERT INTO lists (titre, description, steps, created_at) VALUES (?,?,?, NOW())"
     var res = await MySql2.execute(req, [this.titre, this.description, this.steps])
   }
-  // Méthode qui actualise la liste
-  async update(newValeurs){
-    // On regarde les champs qui ont changé
-    var valeurs = []
-    var columns = []
-    var realNew = {}
-    for(var prop in newValeurs){
-      if (this[prop] != newValeurs[prop]){
-        columns.push(`${prop} = ?`)
-        valeurs.push(newValeurs[prop])
-        Object.assign(realNew, {[prop]: newValeurs[prop]})
-      }
-    }
-    columns.push("updated_at = ?")
-    valeurs.push(new Date())
-    Object.assign(realNew, {updated_at: new Date()})
-    valeurs.push(this.id)
-    var request = `UPDATE Lists SET ${columns.join(', ')} WHERE id = ?`
-    var res = await MySql2.execute(request, valeurs)
-    // On dispatche les nouvelles valeurs dans cette instance
-    for (var prop in realNew) { this[prop] = realNew[prop] }
-    // On update l'affichage si nécessaire
-    this.updateLI()
-    return true
-  }
+
+  
+  afterUpdate(){this.updateLi()}
 
   // Actualisation du LI de la liste dans le DOM (et observation)
-  updateLI(){
+  updateLi(){
     let oldLi = this.li
     delete this._li
     oldLi.replaceWith(this.li)
@@ -383,3 +361,4 @@ class List {
   setModified(v){v = v || false; this.modified = v}
 
 }
+List.prototype.update = updateInstance
