@@ -6,6 +6,11 @@ Object.assign(UI,{
     this.hideCurrentPanel()
     this.currentPanel = this[panelName]
     this.currentPanel.classList.remove('noDisplay')
+    if(panelName === 'itemsPanel'){
+      // Il faut calculer la taille des étapes dans le listing, en pixel,
+      // en fonction de leur nombre et de la largeur du listing.
+      Item.defineDimensions()
+    }
   }
 , showLists(){this.showPanel('listsPanel')}
 , hideCurrentPanel(){

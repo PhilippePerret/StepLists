@@ -7,9 +7,30 @@ div#div-list-items.listbox-oslike {
 div#div-list-items.listbox-oslike ul#item-list {
   width:100%;
 }
+div#div-list-items.listbox-oslike ul#item-list li {
+  padding:0 0 3px 0!important;
+  line-height:1.6em;
+  height:16pt;
+}
 
-div#div-list-items.listbox-oslike ul#item-list span.step {
-  border-right:1px solid red;
+div#div-list-items.listbox-oslike ul#item-list li.li-item span.titre {
+  display:inline-block;
+  width:260px;
+  overflow: hidden;
+  white-space: nowrap;
+  font-weight:bold;
+}
+div#div-list-items.listbox-oslike ul#item-list li.li-item span.step {
+  display:inline-block;
+  border-left:1px solid red;
+  overflow:hidden;
+  white-space: nowrap;
+  font-size:9pt;
+  text-align:center;
+}
+div#div-list-items.listbox-oslike ul#item-list li.li-item span.step.current {
+  background-color: green;
+  color:white;
 }
 
 
@@ -24,3 +45,7 @@ form#item-form {
   top:100px;
   left:20%;
 }
+
+/*
+  Le listing
+*/

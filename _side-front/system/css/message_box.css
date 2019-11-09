@@ -1,0 +1,34 @@
+div.message-box{
+  position: fixed;
+  top: 100px;
+  min-width: 20%;
+  max-width: 40%;
+  left: 35%;
+  background-color: white;
+  border: 2px solid white;
+  border-radius: 0.5em;
+  padding: 2em 3em;
+  box-shadow:6px 6px 16px grey;
+  z-index: 5001;
+}
+div.message-box div.reponse{
+  margin-top: 2em;
+  width: 100%;
+}
+div.message-box div.reponse input[type="text"] {
+  width: inherit;
+  font-size:inherit;
+}
+div.message-box div.buttons {
+  text-align: right;
+  margin-top: 2em;
+}
+
+div.message-box div.buttons button {
+  font-size:inherit;
+  margin-left:8px;
+}
+
+div.message-box div.buttons button:not(.main-button) {
+  border: 1px solid #AAAAAA;
+}

@@ -228,7 +228,7 @@ class List {
     var res = await MySql2.execute(req, [this.titre, this.description, this.steps])
   }
 
-  
+
   afterUpdate(){this.updateLi()}
 
   // Actualisation du LI de la liste dans le DOM (et observation)
@@ -334,7 +334,7 @@ class List {
   // Note : dans la base, c'est un string
   get aSteps(){
     if ( undefined === this._asteps ) {
-      this._asteps = this.steps.split(';')
+      this._asteps = this.steps.split(CR)
     } return this._asteps
   }
 

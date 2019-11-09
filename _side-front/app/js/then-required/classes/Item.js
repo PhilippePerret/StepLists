@@ -18,7 +18,7 @@ class Item {
   static get btnCancelSaveItem(){return document.querySelector("button#btn-cancel-edit-item")}
   static get idField(){return document.querySelector('form#item-form input#item-id')}
   static get listing(){return document.querySelector('ul#item-list')}
-
+  static get buttonsSelect(){return UI.itemsPanel.querySelector('div.btns-selected')}
 
   /**
     Initialisation du panneau des items
@@ -46,8 +46,63 @@ class Item {
     this.btnSaveItem.addEventListener('click', this.onSaveItem.bind(this))
     this.btnCancelSaveItem.addEventListener('click', this.cancelSaveItem.bind(this))
 
+    // --- Les boutons d'action sur la sélection ---
+    // Pour faire avancer l'item (+ 1 étape)
+    var btnNextStep = this.buttonsSelect.querySelector('.btn-next-step')
+    btnNextStep.addEventListener('click',this.SelectedToNextStep.bind(this))
+    // Pour faire reculer l'item (- 1 étape)
+    var btnPrevStep = this.buttonsSelect.querySelector('.btn-prev-step')
+    btnPrevStep.addEventListener('click',this.SelectedToPrevStep.bind(this))
+
+  }// /init
+
+  /**
+    Définit les dimensions utiles
+  **/
+  static defineDimensions(){
+    if ( !this.listing.offsetWidth ){
+      return setTimeout(this.defineDimensions.bind(this),500)
+    }
+    // Largeur actuelle du listing
+    var listingW    = this.listing.offsetWidth
+    var stepsCount  = List.current.aSteps.length
+    var titreWidth  = 262
+    var liPadding   = 12 + (4 * stepsCount)
+    this.spanStepWidth = Math.ceil((listingW - (titreWidth + liPadding)) / stepsCount)
+    // On retire le bord
+    this.spanStepWidth -= 2 // 2 x 1px
+    console.log("listingW = ", listingW)
+    console.log("stepsCount = ", stepsCount)
+    console.log("spanStepWidth", this.spanStepWidth)
   }
 
+  /**
+    Faire passer l'item courant à l'étape suivante
+  **/
+  static SelectedToNextStep(ev){
+    const my = this
+    // Je dois demander quand elle doit être prête
+    var mb = new MessageBox({
+        message: "Doit se terminer dans combien de jours ?"
+      , defaultAnswer: 10
+      , buttons: ['Renoncer','OK']
+      , methodOnOK: my.execPushNextStep.bind(my)
+      , methodOnCancel: function(){}
+
+    })
+    mb.show()
+    return stopEvent(ev)
+  }
+  static execPushNextStep(choix){
+    console.log("arguments:", arguments)
+  }
+  /**
+    Faire revenir l'item courant à l'étape précédente
+  **/
+  static SelectedToPrevStep(ev){
+    console.error("Je dois faire reculer (à implémenter)")
+    return stopEvent(ev)
+  }
   /**
     Sélectionner l'item +item+
     Fonctionne dans les deux "sens" : peut être appelé directement avec un
@@ -60,9 +115,13 @@ class Item {
 
   static get current(){return this._current}
   static set current(v){
-    if (this._current) this._current.deselect()
+    if (this._current) {
+      this.buttonsSelect.classList.add('hidden')
+      this._current.deselect()
+    }
     this._current = v
     this._current.select()
+    this.buttonsSelect.classList.remove('hidden')
   }
 
   /** ---------------------------------------------------------------------
@@ -197,14 +256,15 @@ class Item {
   // Méthode de création du nouvel item
   static createNewItem(){
     if (!this.checkDataValidity()) return
+    this.hideForm()
     let newItem = new Item(this.provData)
     newItem.createAndDisplay()
   }
   // Méthode de sauvegarde de l'item édité
   static saveSelectedItem(){
     if (!this.checkDataValidity()) return
-    this.current.update(this.provData)
     this.hideForm()
+    this.current.update(this.provData)
   }
 
   static select(item){
@@ -369,20 +429,9 @@ class Item {
 
   **/
   async createAndDisplay(){
-    // les données ont été relevées du formulaire, elles ont été
-    // validées, on peut maintenant les distribuer dans l'instance
-    this.dispatchAndNormalizeProvData()
-    await this.create() // à partir des provData
+    await this.create()
     this.build()
   }
-
-  // Distribue les données dans l'instance
-  dispatchAndNormalizeProvData(){
-    for(var prop of ['titre','description','list_id', 'action1', 'action2', 'action3']){
-      this[prop] = this.provData[prop]
-    }
-  }
-
 
   // Actualisation du LI dans la fenêtre (listing)
   updateLi(){
@@ -405,7 +454,22 @@ class Item {
   get li(){
     if ( undefined === this._li ) {
       var li = document.createElement('LI')
-      li.innerHTML = this.titre
+      li.className = 'li-item'
+      // On fabrique un span pour le titre
+      var span = document.createElement('SPAN')
+      span.className = 'titre'
+      span.innerHTML = this.titre
+      li.appendChild(span)
+      // On fabrique un span par étape
+      this.list.aSteps.map( step => {
+        span = document.createElement('SPAN')
+        var classNames = ['step']
+        if ( this.currentStep == step ) { classNames.push('current') }
+        span.className = classNames.join(' ')
+        span.setAttribute('style',`width:${Item.spanStepWidth}px;`)
+        span.innerHTML = `&nbsp;${step}&nbsp;`
+        li.appendChild(span)
+      })
       this._li = li
     } return this._li
   }
@@ -420,10 +484,25 @@ class Item {
       this._list = List.getById(this.list_id)
     } return this._list
   }
+
+  // Retourne le nom de l'étape courante
+  // TODO Plus tard, fonctionner avec des instances ?
+  get currentStep(){
+    if (undefined === this._currentstep){
+      this._currentstep = this.list.aSteps[this.indexLastStep]
+    } return this._currentstep
+  }
+  get indexLastStep(){
+    return this.aSteps.length
+  }
   // Liste des valeurs des étapes exécutées
   get aSteps(){
     if ( undefined === this._asteps ) {
-      this._asteps = this.steps.split(';')
+      if (this.steps){
+        this._asteps = this.steps.split(';')
+      } else {
+        this._asteps = []
+      }
     } return this._asteps
   }
   get action1Value(){return this._a1value}
