@@ -36,6 +36,40 @@ div#div-list-items.listbox-oslike ul#item-list li.li-item span.step.done {
   opacity:0.2;
 }
 
+/*
+    Section des infos de l'item courant
+*/
+div#selected-item-infos {
+  border:1px solid #CCCCCC;
+  border-radius:1em;
+  padding:1em;
+  margin-left:3em;
+  display:inline-block;
+}
+div#selected-item-infos > div,
+div#selected-item-infos > fieldset {
+  margin-top:1em;
+}
+div#selected-item-infos label {
+  font-style:italic;
+  color: #777777;
+}
+div#selected-item-infos div.selected-item-titre{
+  font-size:1.4em;
+}
+div#selected-item-infos div.selected-item-description{
+  font-size:0.9em;
+  margin-left:2em;
+  font-style:italic;
+}
+div#selected-item-infos fieldset {
+  display:inline-block;
+  margin-right:1em;
+}
+div#selected-item-infos .selected-item-buttons button {
+  font-size:0.9em;
+  font-weight:bold;
+}
 
 /*
     Le formulaire
@@ -43,7 +77,7 @@ div#div-list-items.listbox-oslike ul#item-list li.li-item span.step.done {
  */
 form#item-form {
   background-color:white;
-  opacity:0.9;
+  opacity:0.95;
   position:fixed;
   top:100px;
   left:20%;

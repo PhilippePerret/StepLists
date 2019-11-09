@@ -1,9 +1,6 @@
 
-* Création des étapes dans le listing d'items (où ? comment ?)
-* Réglage des étapes de chaque item
-* 3 boutons pour les actions
-* Un bouton pour faire passer l'item à l'étape suivante
-* Procédure de demande de la durée de l'étape quand on passe l'item à la valeur suivante
+* Observer les boutons actions du formulaire d'info et y réagir
+* Ajouter un bouton général pour éditer l'item
 
 * Faire une classe 'Listing' ? (pour la gestion de tous les listings)
 * Faire une classe 'Form' ? (car les méthodes se ressemblent)

@@ -83,8 +83,15 @@
         </form>
       </div>
 
+      <!--
+        |
+        | PANNEAU DES ITEMS
+        |
+      -->
       <div id="items-panel" class="noDisplay">
         <h1 class="panel-title"><span class="list-name">---</span></h1>
+
+        <!-- LISTE DES ITEMS -->
         <div id="div-list-items" class="listbox-oslike">
           <ul id="item-list">
 
@@ -97,6 +104,27 @@
           </div>
         </div>
 
+        <!-- SECTION DES INFOS DE L'ITEM SÉLECTIONNÉ  -->
+        <div id="selected-item-infos" class="noDisplay">
+          <div class="selected-item-titre"></div>
+          <fieldset class="selected-item-buttons">
+            <legend>Actions</legend>
+            <button type="button" id="btn-action1" class="noDisplay"></button>
+            <button type="button" id="btn-action2" class="noDisplay"></button>
+            <button type="button" id="btn-action3" class="noDisplay"></button>
+            <div class="no-action noDisplay explication">Pour définir les 3 actions possibles, éditer l'item en double-cliquant sur son nom dans la liste.</div>
+          </fieldset>
+          <fieldset class="last-step">
+            <legend>Étape courante</legend>
+            <label>Démarrée le </label><span class="date started_at"></span>
+            <label>Attendue pour le </label><span class="date expected_at"></span>
+          </fieldset>
+          <div class="selected-item-description"></div>
+          <div>
+            <label>Créé le </label><span class="date created_at"></span>
+            <label>Modifié le </label><span class="date updated_at"></span>
+          </div>
+        </div>
         <!--
           FORMULAIRE D'ÉDITION D'UN ITEM DE LISTE
         -->

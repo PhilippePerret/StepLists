@@ -11,6 +11,11 @@
 .warning {color:red;}
 .notice { color: blue; }
 
+.explication {
+  font-size:0.85em;
+  font-style:italic;
+}
+
 .noDisplay,
 .notDisplayed {display:none}
 .hidden {visibility:hidden;}

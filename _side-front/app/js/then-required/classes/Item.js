@@ -20,6 +20,7 @@ class Item {
   static get idField(){return document.querySelector('form#item-form input#item-id')}
   static get listing(){return document.querySelector('ul#item-list')}
   static get buttonsSelect(){return UI.itemsPanel.querySelector('div.btns-selected')}
+  static get divInfos(){return this.panel.querySelector('#selected-item-infos')}
 
   /**
     Initialisation du panneau des items
@@ -54,6 +55,11 @@ class Item {
     // Pour faire reculer l'item (- 1 étape)
     var btnPrevStep = this.buttonsSelect.querySelector('.btn-prev-step')
     btnPrevStep.addEventListener('click',this.SelectedToPrevStep.bind(this))
+    // Observer les boutons d'action véritable, dans le bloc des infos, qui
+    // permettent de lancer l'action
+    this.divInfos.querySelector('#btn-action1').addEventListener('click',this.onClickActionButton.bind(this,1))
+    this.divInfos.querySelector('#btn-action2').addEventListener('click',this.onClickActionButton.bind(this,2))
+    this.divInfos.querySelector('#btn-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
 
   }// /init
 
@@ -75,6 +81,36 @@ class Item {
     // console.log("listingW = ", listingW)
     // console.log("stepsCount = ", stepsCount)
     // console.log("spanStepWidth", this.spanStepWidth)
+  }
+
+  /**
+    Méthode appelée quand on clique sur un bouton d'action
+  **/
+  static onClickActionButton(iAction, ev){
+    console.log("Action %d invoquée", iAction)
+    let actionType = this.current[`action${iAction}Type`]
+      , actionValue = this.current[`action${iAction}Value`]
+    var cmd
+    switch(actionType){
+      case 'file':
+      case 'folder':
+      case 'url':
+        cmd = `open "${actionValue}"`
+        break
+      default:
+        cmd = actionValue
+    }
+    cmd = cmd.replace(/\"/g,'\\"')
+    cmd = `bash -c ". /Users/philippeperret/.bash_profile; shopt -s expand_aliases\n${cmd}"`
+    console.log("Commande exécutée : %s", cmd)
+    try {
+      exec(cmd, (error, stdout)=>{
+        console.log(error, stdout)
+      })
+    } catch (e) {
+      console.error("Problème avec la commande '%s' : %s", cmd, e.message)
+    }
+    return stopEvent(ev)
   }
 
   /**
@@ -123,6 +159,7 @@ class Item {
   static set current(v){
     if (this._current) {
       this.buttonsSelect.classList.add('hidden')
+      this.divInfos.classList.add('noDisplay')
       this._current.deselect()
     }
     this._current = v
@@ -134,6 +171,9 @@ class Item {
     var prevEnable = v.indexCurrentStep > 0
     this.panel.querySelector('.btn-prev-step').classList[prevEnable?'remove':'add']('hidden')
 
+    // Il faut afficher les infos
+    this.divInfos.classList.remove('noDisplay')
+    v.show()
   }
 
   /** ---------------------------------------------------------------------
@@ -346,6 +386,52 @@ class Item {
   constructor(data){
     this.data = data
     this.decomposeTypeAndValueInActions()
+  }
+
+  /**
+    Méthode d'affichage de l'item (quand il est sélectionné)
+  **/
+  show(){
+    var divInfos = Item.divInfos
+      , divTitre    = divInfos.querySelector('.selected-item-titre')
+      , divDesc     = divInfos.querySelector('.selected-item-description')
+      , btnAction1  = divInfos.querySelector('.btn-action1')
+      , btnAction2  = divInfos.querySelector('.btn-action2')
+      , btnAction3  = divInfos.querySelector('.btn-action3')
+      , spanCreatedAt   = divInfos.querySelector('.date.created_at')
+      , spanStartedAt   = divInfos.querySelector('.date.started_at')
+      , spanUpdatedAt   = divInfos.querySelector('.date.updated_at')
+      , spanExpectedAt  = divInfos.querySelector('.date.expected_at')
+
+    var isStarted = this.indexCurrentStep > 0
+    divTitre.innerHTML  = this.titre
+    divDesc.innerHTML   = this.description
+    spanCreatedAt.innerHTML = this.created_at.toLocaleDateString('fr-FR')
+    spanUpdatedAt.innerHTML = (this.updated_at||this.created_at).toLocaleDateString('fr-FR')
+    spanStartedAt.innerHTML = isStarted ? this.aSteps[this.indexCurrentStep-1] : "En attente"
+    spanExpectedAt.innerHTML = isStarted ? this.expectedNext.toLocaleDateString('fr-FR') : '---'
+    // Construction des boutons
+    var aucuneAction = true
+    for(var iAction of [1,2,3]){
+      var prop = `action${iAction}`
+      var actif = !! this[prop]
+      if ( actif ) aucuneAction = false
+      var btnAction = divInfos.querySelector(`#btn-${prop}`)
+      btnAction.classList[actif?'remove':'add']('noDisplay')
+      btnAction.innerHTML = ((actif,type,valeur)=>{
+        if (actif){
+          switch(type){
+            case 'file':    return `Ouvrir le fichier « ${path.basename(valeur)} »`; break;
+            case 'folder':  return `Ouvrir le dossier « ${path.basename(valeur)} »`; break;
+            case 'url':     return `Ouvrir l'URL « ${path.basename(valeur)} »`; break;
+            case 'code':    return `Jouer le code \`${valeur.substring(0,20)}…\``; break;
+          }
+        } else {return ''}
+      })(actif, this[`${prop}Type`], this[`${prop}Value`])
+    }
+    // Visibilité du texte d'aide
+    document.querySelector('.no-action').classList[aucuneAction?'remove':'add']('noDisplay')
+
   }
 
   // Méthode qui crée le nouvel item
@@ -578,6 +664,10 @@ class Item {
   set action2(v){this.data.action2 = v}
   get action3(){return this.data.action3}
   set action3(v){this.data.action3 = v}
+  get updated_at(){return this.data.updated_at}
+  set updated_at(v){this.data.updated_at = v}
+  get created_at(){return this.data.created_at}
+  set created_at(v){this.data.created_at = v}
 }
 
 Item.prototype.update = updateInstance
