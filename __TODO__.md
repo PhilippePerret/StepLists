@@ -1,8 +1,16 @@
+* Traiter les données de l'item (édité) comme la liste, avec une méthode de classe qui checke les données (voir si elle n'existe pas déjà…)
+
+* Faire une classe 'Listing'
+* Faire une classe 'Form' (car les méthodes sont les mêmes à chaque fois)
+
 * Affichage des items
   * Création des étapes dans l'item
 * Bien expliquer (pour le développeur) comment fonctionne expectedNext : en fait, c'est quand on passe l'item à l'étape suivante que le programme demande la date de réalisation attendue (peut-être avec une tolérance ? — mais il n'y a pas de champ pour ça, encore)
 * Édition d'un item (en cliquant dessus — ie en le mettant en courant)
 * Pouvoir détruire une liste, après demande
+
+* Faire le logo
+* Faire les tests
 
 * Amélioration : pouvoir donner des informations sur les étapes (on va finir par faire une table, finalement)
   - le titre (on l'a déjà)

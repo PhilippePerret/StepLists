@@ -11,6 +11,15 @@ class Item {
     *
   *** --------------------------------------------------------------------- */
 
+
+  // Les éléments graphiques
+  static get form(){return document.querySelector('form#item-form')}
+  static get btnSaveItem(){return document.querySelector("button#btn-save-item")}
+  static get btnCancelSaveItem(){return document.querySelector("button#btn-cancel-edit-item")}
+  static get idField(){return document.querySelector('form#item-form input#item-id')}
+  static get listing(){return document.querySelector('ul#item-list')}
+
+
   /**
     Initialisation du panneau des items
     Notamment pour rendre actif les + et -
@@ -37,6 +46,23 @@ class Item {
     this.btnSaveItem.addEventListener('click', this.onSaveItem.bind(this))
     this.btnCancelSaveItem.addEventListener('click', this.cancelSaveItem.bind(this))
 
+  }
+
+  /**
+    Sélectionner l'item +item+
+    Fonctionne dans les deux "sens" : peut être appelé directement avec un
+    item ou peut être appelée par la méthode 'select' de l'item
+  **/
+  select(item){
+    this._current = item
+    item.select()
+  }
+
+  static get current(){return this._current}
+  static set current(v){
+    if (this._current) this._current.deselect()
+    this._current = v
+    this._current.select()
   }
 
   /**
@@ -90,12 +116,6 @@ class Item {
     }
   }
 
-  // Les éléments graphiques (interactifs)
-  static get form(){return document.querySelector('form#item-form')}
-  static get btnSaveItem(){return document.querySelector("button#btn-save-item")}
-  static get btnCancelSaveItem(){return document.querySelector("button#btn-cancel-edit-item")}
-  static get idField(){return document.querySelector('form#item-form input#item-id')}
-
   static showForm(){
     this.form.classList.remove('noDisplay')
     this.formIsVisible = true
@@ -103,18 +123,6 @@ class Item {
   static hideForm(){
     this.form.classList.add('noDisplay')
     this.formIsVisible = false
-  }
-
-  static addItemToCurrentList(ev){
-    // Si le formulaire est visible, demander à le fermer
-    if (this.formIsVisible){
-      alert("Refermer le formulaire ouvert, avant de créer un nouvel item.")
-      return
-    }
-    // console.log("Ajout d'item demandé")
-    this.showForm()
-    this.resetForm()
-    return stopEvent(ev)
   }
 
   static resetForm(){
@@ -135,6 +143,19 @@ class Item {
       obj.classList.add('noDisplay')
     }
   }
+
+  static addItemToCurrentList(ev){
+    // Si le formulaire est visible, demander à le fermer
+    if (this.formIsVisible){
+      alert("Refermer le formulaire ouvert, avant de créer un nouvel item.")
+      return
+    }
+    // console.log("Ajout d'item demandé")
+    this.showForm()
+    this.resetForm()
+    return stopEvent(ev)
+  }
+
 
   /**
     Méthode appelée par le bouton "Enregrister" du formulaire
@@ -157,10 +178,9 @@ class Item {
   static editSelectedItem(ev){
     // console.log("Ajout d'item demandé")
     this.showForm()
-    this.idField.value = editedItem.id
+    this.current.edit()
     return stopEvent(ev)
   }
-
 
   static removeSelectedItem(ev){
     console.error("Destruction d'item demandée (à implémenter)")
@@ -185,8 +205,14 @@ class Item {
   // Méthode de sauvegarde de l'item édité
   static saveSelectedItem(){
     console.error("Implémentation de Item::saveSelectedItem requise")
+
     this.hideForm()
   }
+
+  static select(item){
+    this.current = item
+  }
+
 
 
   /** ---------------------------------------------------------------------
@@ -197,6 +223,7 @@ class Item {
   *** --------------------------------------------------------------------- */
   constructor(data){
     this.data = data
+    this.decomposeTypeAndValueInActions()
   }
 
   // Méthode qui crée le nouvel item
@@ -208,11 +235,81 @@ class Item {
     await MySql2.execute(request, valeurs)
   }
 
-  // Méthode qui construit l'item
-  build(){
+  async update(newValeurs){
 
+    this.decomposeTypeAndValueInActions()
   }
 
+  // Méthode qui construit l'item
+  build(){
+    Item.listing.appendChild(this.li)
+    this.observe()
+  }
+
+  observe(){
+    const my = this
+    my.li.addEventListener('click',my.onClick.bind(my))
+    my.li.addEventListener('dblclick',my.onDblClick.bind(my))
+  }
+
+  onClick(ev){
+    console.log("-> onClick, this = ", this)
+    this.select()
+    return stopEvent(ev)
+  }
+
+  onDblClick(ev){
+    this.edit()
+    return stopEvent(ev)
+  }
+
+  select(){
+    if (Item.current != this){
+      Item.select(this)
+      return
+    }
+    this.li.classList.add('selected')
+  }
+  deselect(){
+    this.li.classList.remove('selected')
+  }
+
+  edit(){
+    Item.showForm()
+    Item.resetForm()
+    for(var prop of ['id','titre','description']){
+      document.querySelector(`form#item-form #item-${prop}`).value = this[prop]
+    }
+    // Les actions
+    for(var iAction of [1,2,3]){
+      prop = `action${iAction}`
+      if ( this[prop] ) {
+        // <= L'action est définie
+        // => Il faut la régler
+        var typeA = this[`${prop}Type`]
+        var valueA = this[`${prop}Value`]
+        var btnChoose = document.querySelector(`#btn-choose-file-${prop}`)
+        var codeField = document.querySelector(`#item-${prop}`)
+        // 1. Régler son type dans le menu
+        Item.form.querySelector(`#item-${prop}-type`).value = typeA
+        // 2. Afficher le champ d'édition voulu
+        // 3. Régler la valeur du champ d'édition
+        var btn, field
+        switch(typeA){
+          case 'file':
+          case 'folder':
+            [btn,field] = [true,false]
+            btnChoose.innerHTML = `Choisir ${path.basename(valueA)}`
+            break
+          default:
+            [btn,field] = [false,true]
+            codeField.value = valueA
+        }
+        btnChoose.classList[btn?'remove':'add']('noDisplay')
+        codeField.classList[field?'remove':'add']('noDisplay')
+      }
+    }
+  }
   /**
     Méthode qui crée l'item et l'affiche dans la liste
 
@@ -277,6 +374,32 @@ class Item {
     }
   }
 
+  // Actualisation du LI dans la fenêtre (listing)
+  updateLi(){
+    var oldLi = this._li
+    delete this._li
+    oldLi.replaceWith(this.li)
+    this.observe()
+  }
+
+
+  /**
+    |
+    | Helpers
+    |
+  **/
+
+  /**
+    Le LI principal de l'item
+  **/
+  get li(){
+    if ( undefined === this._li ) {
+      var li = document.createElement('LI')
+      li.innerHTML = this.titre
+      this._li = li
+    } return this._li
+  }
+
   /**
     |Propriétés volatiles
   **/
@@ -293,9 +416,27 @@ class Item {
       this._asteps = this.steps.split(';')
     } return this._asteps
   }
+  get action1Value(){return this._a1value}
+  get action1Type(){return this._a1type}
+  get action2Value(){return this._a2value}
+  get action2Type(){return this._a2type}
+  get action3Value(){return this._a3value}
+  get action3Type(){return this._a3type}
+  decomposeTypeAndValueInActions(){
+    for(var iAction of [1,2,3]){
+      var prop = `action${iAction}`
+      if (this[prop]){
+        [this[`_a${iAction}type`],this[`_a${iAction}value`]] = this[prop].split('::')
+      } else {
+        delete this[`_a${iAction}type`]
+        delete this[`_a${iAction}value`]
+      }
+    }
+  }
   /**
     |Propriétés fixes (enregistrées)
   **/
+  get id(){return this.data.id}
   get titre(){return this.data.titre}
   set titre(v){this.data.titre = v}
   get description(){return this.data.description}

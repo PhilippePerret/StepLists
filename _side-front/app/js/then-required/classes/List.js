@@ -299,27 +299,33 @@ class List {
     Méthode qui affiche les items de la liste
   **/
   async showItems(){
-    let itemList = document.querySelector('ul#item-list')
-    // Masquer la section des listes
-    // et Afficher la section des items
     UI.showPanel('itemsPanel')
     // On renseigne l'identifiant de liste qui permettra de régler
     // les list_id des nouveaux items ou items édités
     document.querySelector('#item-list_id').value = this.id
     // Vider la section des items
-    itemList.innerHTML = ""
+    Item.listing.innerHTML = ""
     // Peupler la section des items
     if ( undefined === this._items ){
       await this.loadItems()
     }
-    for ( var item_id in this.items ) {
-      itemList.appendChild(this.items[item_id].li)
+    var liste
+    if ( this.sorted_items ) {
+      // TODO Lorsqu'on pourra classer les items, c'est la liste
+      // classée qu'on prendra
+    } else {
+      liste = Object.values(this.items)
     }
+    liste.map(item => item.build())
   }
 
   /**
+    |
     | Méthodes d'helpers
+    |
   **/
+
+  // LI de la liste
   get li(){
     if ( undefined === this._li ){
       var li = document.createElement('LI')
@@ -334,9 +340,9 @@ class List {
   async loadItems(){
     this._items = {}
     var items = await MySql2.execute('SELECT * FROM items WHERE list_id = ?', [this.id])
-    for(var dItem of items){
-      var iItem = new Item(dItem)
-      Object.assign(this._items, {[iItem.id]: iItem})
+    for(var dataItem of items){
+      var instanceItem = new Item(dataItem)
+      Object.assign(this._items, {[instanceItem.id]: instanceItem})
     }
   }
   /**
