@@ -13,6 +13,7 @@ class Item {
 
 
   // Les éléments graphiques
+  static get panel(){return UI.itemsPanel}
   static get form(){return document.querySelector('form#item-form')}
   static get btnSaveItem(){return document.querySelector("button#btn-save-item")}
   static get btnCancelSaveItem(){return document.querySelector("button#btn-cancel-edit-item")}
@@ -81,10 +82,14 @@ class Item {
   **/
   static SelectedToNextStep(ev){
     const my = this
+    // On prend le nombre de jour par défaut défini pour la liste
+    // s'il existe, sinon 10
+    var defautJours = List.current.iSteps[this.current.indexCurrentStep+1].nombreJoursDefaut
+    defautJours || (defautJours = 10)
     // Je dois demander quand elle doit être prête
     var mb = new MessageBox({
         message: "Doit se terminer dans combien de jours ?"
-      , defaultAnswer: 10
+      , defaultAnswer: defautJours
       , buttons: ['Renoncer','OK']
       , methodOnOK: my.execPushNextStep.bind(my)
       , methodOnCancel: function(){}
@@ -101,7 +106,7 @@ class Item {
     Faire revenir l'item courant à l'étape précédente
   **/
   static SelectedToPrevStep(ev){
-    console.error("Je dois faire reculer (à implémenter)")
+    alert("Pour le moment, on ne peut pas revenir en arrière.")
     return stopEvent(ev)
   }
   /**
@@ -123,6 +128,12 @@ class Item {
     this._current = v
     this._current.select()
     this.buttonsSelect.classList.remove('hidden')
+    // Peut-on passer à l'étape suivante ?
+    var nextEnable = v.indexCurrentStep < v.list.aSteps.length - 1
+    this.panel.querySelector('.btn-next-step').classList[nextEnable?'remove':'add']('hidden')
+    var prevEnable = v.indexCurrentStep > 0
+    this.panel.querySelector('.btn-prev-step').classList[prevEnable?'remove':'add']('hidden')
+
   }
 
   /** ---------------------------------------------------------------------
@@ -449,20 +460,17 @@ class Item {
     +nombreJours+ est l'échéance attendue
   **/
   async goToNextStep(nombreJours){
-    console.log("steps au départ de goToNextStep:%s",`${this.steps}`)
     var spans = this.li.querySelectorAll('span')
     spans[this.indexCurrentStep+1].classList.remove('current')
     var today = new Date()
     this.aSteps.push(today.toLocaleDateString('en-US'))
-    console.log("this.aSteps = ",this.aSteps)
     var expectedAt = today.addDays(nombreJours)
     await this.update({steps:this.aSteps.join(';'), expectedNext:expectedAt})
     delete this._asteps
-    console.log("steps à la fin de goToNextStep:%s",`${this.steps}`)
     spans[this.indexCurrentStep+1].classList.add('current')
   }
   goToPrevStep(){
-
+    alert("Pour le moment, on ne peut pas reculer.")
   }
   /**
     |
@@ -485,7 +493,7 @@ class Item {
       // On fabrique un span par étape
       for(var iStep in this.list.aSteps){
       // this.list.aSteps.map( step => {
-        var step = this.list.aSteps[iStep]
+        var step = this.list.iSteps[iStep]
         span = document.createElement('SPAN')
         var classNames = ['step']
         if ( iStep < this.indexCurrentStep ) {
@@ -495,7 +503,7 @@ class Item {
         }
         span.className = classNames.join(' ')
         span.setAttribute('style',`width:${Item.spanStepWidth}px;`)
-        span.innerHTML = `&nbsp;${step}&nbsp;`
+        span.innerHTML = `&nbsp;${step.titre}&nbsp;`
         li.appendChild(span)
       }
       this._li = li

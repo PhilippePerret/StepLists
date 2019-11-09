@@ -339,6 +339,15 @@ class List {
   }
 
   /**
+    Retourne la liste des instances {Step} des étapes de la liste courante
+  **/
+  get iSteps(){
+    if (undefined === this._isteps){
+      this._isteps = this.aSteps.map(dStep => new Step(dStep))
+    } return this._isteps
+  }
+
+  /**
     | Méthodes de données fixe
   **/
   get id(){return this.data.id}
