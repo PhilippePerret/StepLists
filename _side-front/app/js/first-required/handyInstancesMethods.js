@@ -24,7 +24,7 @@ async function updateInstance(newValeurs){
     }
   }
   if ( valeurs.length < 1 ){
-    // console.log("PAS DE MODIFICATION")
+    console.log("PAS DE MODIFICATION")
     return // pas de modification
   }
   else {
@@ -40,7 +40,10 @@ async function updateInstance(newValeurs){
   // console.log("avec les valeurs : ", valeurs)
 
   // On dispatche les nouvelles valeurs dans l'instance
-  for(var prop in modValues){this[prop]=modValues[prop]}
+  for(var prop in modValues){
+    console.log("Dans updateInstance, on met '%s' à ", prop, modValues[prop])
+    this[prop] = modValues[prop]
+  }
   // Si une méthode afterUpdate existe, on l'invoque pour finir
   if ('function' === typeof this.afterUpdate){
     this.afterUpdate.call(this)

@@ -71,9 +71,9 @@ class Item {
     this.spanStepWidth = Math.ceil((listingW - (titreWidth + liPadding)) / stepsCount)
     // On retire le bord
     this.spanStepWidth -= 2 // 2 x 1px
-    console.log("listingW = ", listingW)
-    console.log("stepsCount = ", stepsCount)
-    console.log("spanStepWidth", this.spanStepWidth)
+    // console.log("listingW = ", listingW)
+    // console.log("stepsCount = ", stepsCount)
+    // console.log("spanStepWidth", this.spanStepWidth)
   }
 
   /**
@@ -93,8 +93,9 @@ class Item {
     mb.show()
     return stopEvent(ev)
   }
-  static execPushNextStep(choix){
-    console.log("arguments:", arguments)
+  static execPushNextStep(nombreJours, choix){
+    if ( choix != 1 ) return // annulation
+    this.current.goToNextStep(parseInt(nombreJours,10))
   }
   /**
     Faire revenir l'item courant à l'étape précédente
@@ -349,6 +350,8 @@ class Item {
   //   await updateInstance(this, newValeurs)
   // }
   afterUpdate(){
+    delete this._asteps
+    delete this._currentstep
     this.decomposeTypeAndValueInActions()
     this.updateLi()
   }
@@ -441,7 +444,26 @@ class Item {
     this.observe()
   }
 
+  /**
+    Pour faire passer l'item à son étape suivante
+    +nombreJours+ est l'échéance attendue
+  **/
+  async goToNextStep(nombreJours){
+    console.log("steps au départ de goToNextStep:%s",`${this.steps}`)
+    var spans = this.li.querySelectorAll('span')
+    spans[this.indexCurrentStep+1].classList.remove('current')
+    var today = new Date()
+    this.aSteps.push(today.toLocaleDateString('en-US'))
+    console.log("this.aSteps = ",this.aSteps)
+    var expectedAt = today.addDays(nombreJours)
+    await this.update({steps:this.aSteps.join(';'), expectedNext:expectedAt})
+    delete this._asteps
+    console.log("steps à la fin de goToNextStep:%s",`${this.steps}`)
+    spans[this.indexCurrentStep+1].classList.add('current')
+  }
+  goToPrevStep(){
 
+  }
   /**
     |
     | Helpers
@@ -461,15 +483,21 @@ class Item {
       span.innerHTML = this.titre
       li.appendChild(span)
       // On fabrique un span par étape
-      this.list.aSteps.map( step => {
+      for(var iStep in this.list.aSteps){
+      // this.list.aSteps.map( step => {
+        var step = this.list.aSteps[iStep]
         span = document.createElement('SPAN')
         var classNames = ['step']
-        if ( this.currentStep == step ) { classNames.push('current') }
+        if ( iStep < this.indexCurrentStep ) {
+          classNames.push('done')
+        } else if ( iStep == this.indexCurrentStep ) {
+          classNames.push('current')
+        }
         span.className = classNames.join(' ')
         span.setAttribute('style',`width:${Item.spanStepWidth}px;`)
         span.innerHTML = `&nbsp;${step}&nbsp;`
         li.appendChild(span)
-      })
+      }
       this._li = li
     } return this._li
   }
@@ -489,10 +517,10 @@ class Item {
   // TODO Plus tard, fonctionner avec des instances ?
   get currentStep(){
     if (undefined === this._currentstep){
-      this._currentstep = this.list.aSteps[this.indexLastStep]
+      this._currentstep = this.list.aSteps[this.indexCurrentStep]
     } return this._currentstep
   }
-  get indexLastStep(){
+  get indexCurrentStep(){
     return this.aSteps.length
   }
   // Liste des valeurs des étapes exécutées

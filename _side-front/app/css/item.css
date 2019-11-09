@@ -32,6 +32,9 @@ div#div-list-items.listbox-oslike ul#item-list li.li-item span.step.current {
   background-color: green;
   color:white;
 }
+div#div-list-items.listbox-oslike ul#item-list li.li-item span.step.done {
+  opacity:0.2;
+}
 
 
 /*
