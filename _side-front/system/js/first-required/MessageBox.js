@@ -47,7 +47,7 @@ class MessageBox {
     this.title      = data.title || data.titre
     this.type       = data.type || 'alert' // 'alert', 'confirm' // inusité
     this.width      = data.width
-    this.message    = data.message
+    this.message    = data.message.replace(/\n/g,'<br>')
     this.defaultButtonIndex = data.defaultButtonIndex
     if(undefined === this.defaultButtonIndex){
       this.defaultButtonIndex = 1

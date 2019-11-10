@@ -1,9 +1,9 @@
-* Faire une classe step pour les étapes qui soit enregistrée dans la base
-  - dans la liste, enregistrer seulement les ID des steps
-  - dans les items, associer l'ID avec le temps
+* Mettre le focus au titre quand on fait une nouvelle liste
 
-* Faire une classe 'Listing' ? (pour la gestion de tous les listings)
-* Faire une classe 'Form' ? (car les méthodes se ressemblent)
+* Pouvoir détruire un item de liste
+* Faire une classe step pour les étapes qui soit enregistrée dans la base
+  - dans les items, associer l'ID avec le temps
+  - updater la lecture des steps de l'item
 
 * Bien expliquer (pour le développeur) comment fonctionne expectedNext : en fait, c'est quand on passe l'item à l'étape suivante que le programme demande la date de réalisation attendue (peut-être avec une tolérance ? — mais il n'y a pas de champ pour ça, encore)
 * Édition d'un item (en cliquant dessus — ie en le mettant en courant)

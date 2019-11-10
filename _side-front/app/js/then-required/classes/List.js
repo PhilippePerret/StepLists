@@ -145,8 +145,12 @@ class List {
     this.hideForm()
   }
 
-  static removeSelectedList(ev){
-    console.log("Destruction de liste demandée")
+  static async removeSelectedList(ev){
+    if (await confirmer(`Êtes-vous certain de vouloir détruire la liste « ${this.current.titre} » (et tous ses éléments) ?\n\nCette opération est IRRÉVERSIBLE.`)){
+      this.current.destroy()
+    } else {
+      console.log("Je ne détruis pas la liste")
+    }
     return stopEvent(ev)
   }
 
@@ -254,14 +258,18 @@ class List {
   static set current(v){
     if (this._current){
       this._current.li.classList.remove('selected')
+      delete this._current
+      document.querySelector('div#div-lists .btns-selected').classList.add('hidden')
     }
-    this._current = v
-    // On règle le titre partout où il est utilisé
-    document.querySelector('.list-name').innerHTML = v.titre
-    // On met le lit en exergue
-    v.li.classList.add('selected')
-    // On affiche les boutons qui permettent de gérer la liste
-    document.querySelector('div#div-lists .btns-selected').classList.remove('hidden')
+    if ( v ) {
+      this._current = v
+      // On règle le titre partout où il est utilisé
+      document.querySelector('.list-name').innerHTML = v.titre
+      // On met le lit en exergue
+      v.li.classList.add('selected')
+      // On affiche les boutons qui permettent de gérer la liste
+      document.querySelector('div#div-lists .btns-selected').classList.remove('hidden')
+    }
   }
 
 
@@ -324,8 +332,10 @@ class List {
     console.log("-> saveSteps")
     // console.log("stepsData = ", stepsData)
     // On conserve la liste courante pour voir s'il y a changement
-    console.log("this.stepsId au début de saveSteps:", this.stepsId.split(','))
-    this.oldStepsId = this.stepsId.split(',').join(',')
+    if ( this.stepsId) {
+      // console.log("this.stepsId au début de saveSteps:", this.stepsId.split(','))
+      this.oldStepsId = this.stepsId.split(',').join(',')
+    }
 
     var request, valeurs
       , stepsId = []
@@ -394,6 +404,26 @@ class List {
     this.li.addEventListener('click', this.onClick.bind(this))
     this.li.addEventListener('dblclick', this.onDblClick.bind(this))
   }
+
+  async destroy(){
+    // Destruction de ses données, de ses étapes et de ses
+    // items dans la base de données
+    var request = `DELETE FROM lists WHERE id = ${this.id}`
+    await MySql2.execute(request)
+    request = `DELETE FROM items WHERE list_id = ${this.id}`
+    await MySql2.execute(request)
+    request = `DELETE FROM steps WHERE list_id = ${this.id}`
+    await MySql2.execute(request)
+    // Destruction dans la liste
+    this.li.remove()
+    // Destruction dans la classe
+    delete List.listsById[this.id]
+    List.current = null
+    console.log("Destruction de la liste #%d opérée avec succès", this.id)
+  }
+
+
+
   onClick(ev){
     List.current = this
     return stopEvent(ev)

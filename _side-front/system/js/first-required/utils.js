@@ -84,7 +84,7 @@ window.isNotEmpty = function(foo){
 window.isNotAscii = function(str){ return str.replace(/[a-zA-Z0-9_]/g,'') != '' }
 window.isFunction = function(foo){ return STRfunction === typeof(foo) }
 window.isNotFunction = function(foo){ return false === isFunction(foo) }
-window.isString = function(foo)  { return STRstring === typeof(foo) }
+window.isString = function(foo)  { return 'string' === typeof(foo) }
 window.isNotString = function(foo){return false === isString(foo)}
 window.isObject = function(foo)  { return STRobject == typeof(foo) && !isArray(foo) }
 window.isArray = function(foo)   { return Array.isArray(foo) }
