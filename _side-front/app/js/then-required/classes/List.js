@@ -183,6 +183,7 @@ class List {
       provData.titre.length < 201 || errors.push("Le titre est trop long (200 lettres max)")
     }
     provData.description.length < 65000 || errors.push("La description est trop longue (65000 caractères max)")
+
     provData.steps.length > 0 || errors.push("Les étapes doivent être définies.")
 
     if (errors.length){
@@ -220,6 +221,9 @@ class List {
   *** --------------------------------------------------------------------- */
   constructor(data){
     this.data = data
+    // On doit garder une trace des étapes actuelles pour pouvoir checker
+    // et corriger les items (leurs étapes) s'ils existent
+    this.keptSteps = `${this.steps}`
   }
 
   // Méthode qui crée la liste
@@ -228,8 +232,21 @@ class List {
     var res = await MySql2.execute(req, [this.titre, this.description, this.steps])
   }
 
-
-  afterUpdate(){this.updateLi()}
+  async afterUpdate(){
+    if ( undefined === this._items ){
+      await this.loadItems()
+    }
+    // S'il y a des items dans cette liste et que les étapes ont été
+    // modifiées, il faut checker ce qu'il y a à faire
+    if ( this.items.length && this.keptSteps != this.steps) {
+      Step.checkAndResolveStepsChanges(this)
+    } else {
+      if (this.items.length) {
+        console.log("Aucun item dans cette liste, les étapes peuvent être modifiées sans souci.")
+      }
+    }
+    this.updateLi()
+  }
 
   // Actualisation du LI de la liste dans le DOM (et observation)
   updateLi(){

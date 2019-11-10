@@ -49,6 +49,9 @@ class Item {
     this.btnCancelSaveItem.addEventListener('click', this.cancelSaveItem.bind(this))
 
     // --- Les boutons d'action sur la sélection ---
+    // Pour éditer l'item sélectionné
+    var btnEditItem = this.panel.querySelector('.btn-edit-item')
+    btnEditItem.addEventListener('click',this.editSelectedItem.bind(this))
     // Pour faire avancer l'item (+ 1 étape)
     var btnNextStep = this.buttonsSelect.querySelector('.btn-next-step')
     btnNextStep.addEventListener('click',this.SelectedToNextStep.bind(this))

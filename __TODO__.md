@@ -1,6 +1,4 @@
 
-* Observer les boutons actions du formulaire d'info et y réagir
-* Ajouter un bouton général pour éditer l'item
 
 * Faire une classe 'Listing' ? (pour la gestion de tous les listings)
 * Faire une classe 'Form' ? (car les méthodes se ressemblent)
@@ -20,4 +18,4 @@
 
 ## Questions
 
-* Rendre le formulaire d'édition de la liste flottant ?
+### Rendre le formulaire d'édition de la liste flottant ?
