@@ -27,8 +27,9 @@
 .listbox-oslike ul li:nth-child(odd){
   background-color:#FFFFFF;
 }
-.listbox-oslike ul li.selected {
-  background-color:#9af58f;
+.listbox-oslike ul li.selected,
+.listbox-oslike ul li.current {
+  background-color:#d6fbd1;
 }
 
 .listbox-oslike .other-btns {

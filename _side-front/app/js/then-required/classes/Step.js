@@ -7,6 +7,24 @@ class Step {
     *   CLASSE
     *
   *** --------------------------------------------------------------------- */
+  static init(){
+    // Initialisation de la liste dans le formulaire de liste
+    List.divSteps.querySelector('.btn-up').addEventListener('click', this.moveCurrentUp.bind(this))
+    List.divSteps.querySelector('.btn-down').addEventListener('click', this.moveCurrentDown.bind(this))
+  }
+
+  static get current(){return this._current}
+  static set current(v){
+    if ( this._current ) {
+      this.current.li.classList.remove('current')
+      List.divSteps.querySelector('div.btns-selected').classList.add('hidden')
+    }
+    if ( v ){
+      this._current = v
+      v.li.classList.add('current')
+      List.divSteps.querySelector('div.btns-selected').classList.remove('hidden')
+    }
+  }
 
   static newId(){
     if(undefined === this.lastNewId){this.lastNewId = -0}
@@ -22,6 +40,29 @@ class Step {
         ></li>
       `
   }
+
+  // Pour monter l'étape courante
+  static moveCurrentUp(){
+    var prev = this.current.li.previousSibling
+    if (prev){
+      console.log("prev:",prev)
+      this.current.li.parentNode.insertBefore(this.current.li,prev)
+    }
+    console.log("up")
+  }
+  // Pour descendre l'étape courante
+  static moveCurrentDown(){
+    var next = this.current.li.nextSibling
+    if (next){
+      if ( next.nextSibling ){
+        this.current.li.parentNode.insertBefore(this.current.li, next.nextSibling)
+      } else {
+        this.current.li.parentNode.appendChild(this.current.li)
+      }
+    }
+    console.log("Down")
+  }
+
   /**
     Vérifie si des modifications d'étapes sont à faire dans la liste {List}
     +liste+ et les opère.
@@ -52,18 +93,20 @@ class Step {
   observe(){
     const my = this
     this.li.querySelectorAll('input[type="text"]').forEach(span => {
-      span.addEventListener('focus',  my.onFocus.bind(my))
-      span.addEventListener('blur',   my.onBlur.bind(my))
+      span.addEventListener('focus',  my.onFocus.bind(my, span))
+      span.addEventListener('blur',   my.onBlur.bind(my, span))
     })
   }
 
-  onFocus(){
+  onFocus(span, ev){
     Step.current = this
-    console.log("Focus dans l'étape", this.id)
+    span.select()
+    return stopEvent(ev)
   }
-  onBlur(){
-    delete Step.current
-    console.log("Blur de l'étape", this.id)
+  onBlur(span, ev){
+    // On ne déselectionne pas, sinon les boutons seraient injouables (ils
+    // disparaitraient aussitôt)
+    return stopEvent(ev)
   }
 
   /** ---------------------------------------------------------------------

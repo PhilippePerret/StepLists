@@ -18,7 +18,8 @@ class List {
   static get btnSaveList(){return document.querySelector('form#list-form button#btn-save-list')}
   static get btnCancelList(){return document.querySelector('form#list-form button#btn-cancel-save-list')}
   static get idField(){return document.querySelector('form#list-form input#list-id')}
-  static get stepsList(){return this.panel.querySelector('ul#list-steps')}
+  static get divSteps(){return this.form.querySelector('#listbox-list-steps')}
+  static get stepsList(){return this.divSteps.querySelector('ul#list-steps')}
 
   /**
     Initialisation du panneau des listes
@@ -323,7 +324,8 @@ class List {
     console.log("-> saveSteps")
     // console.log("stepsData = ", stepsData)
     // On conserve la liste courante pour voir s'il y a changement
-    this.oldStepsId = `${this.stepsId}`
+    console.log("this.stepsId au début de saveSteps:", this.stepsId.split(','))
+    this.oldStepsId = this.stepsId.split(',').join(',')
 
     var request, valeurs
       , stepsId = []
@@ -350,7 +352,7 @@ class List {
     if ( this.data.stepsId.length > 254 ) {
       console.error("La longueur de la données étapes est malheureusement trop longue…", this.stepsId)
     }
-    console.log("À la fin de List.saveSteps, this.stepsId = ", this.stepsId, this.data.stepsId)
+    console.log("À la fin de List.saveSteps, this.stepsId = %s (this.data.stepsId %s). Au début : %s", this.stepsId, this.data.stepsId, this.oldStepsId)
     if ( this.oldStepsId != this.stepsId ) {
       console.warn("Les données étapes ont changé, il faudrait les checker")
       // TODO
@@ -491,7 +493,10 @@ class List {
   get steps(){
     if ( undefined === this._steps ){
       this._steps = []
-      this.dataSteps.forEach(stepData => this._steps.push(new Step(stepData)))
+      this.stepsId.split(',').forEach( step_id => {
+        step_id = parseInt(step_id,10)
+        this._steps.push(new Step(this.dataSteps[step_id]))
+      })
     } return this._steps
   }
 
@@ -504,7 +509,10 @@ class List {
   async loadSteps(){
     var request = `SELECT * FROM steps WHERE id IN (${this.stepsId})`
     // console.log("Requête :", request)
-    this.dataSteps = await MySql2.execute(request)
+    this.dataSteps = {}
+    var stepsInDB = await MySql2.execute(request)
+    stepsInDB.forEach(dStep => Object.assign(this.dataSteps, {[dStep.id]: dStep}))
+
     console.log("steps loadées : ", this.dataSteps)
   }
 

@@ -12,7 +12,7 @@
 
 **/
 async function updateInstance(newValeurs){
-  console.log("-> updateInstance avec : ", newValeurs)
+  // console.log("-> updateInstance avec : ", newValeurs)
   if ( 'function' == typeof this.beforeUpdate ) {
     newValeurs = await this.beforeUpdate.call(this, newValeurs)
   }
