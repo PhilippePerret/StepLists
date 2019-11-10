@@ -53,9 +53,17 @@ const Dom = {
     for(var k in attrs){
       switch (k) {
         case 'inner':
+          console.log("inner ajouté :", attrs[k])
+          if ( 'string' === typeof attrs[k]) {
+            dom.innerHTML = attrs[k]
+          } else {
+            // Ce sont des éléments DOM à insérer
+            attrs[k].map( domElement => dom.appendChild(domElement))
+          }
+          break;
         case 'text':
           dom.innerHTML = attrs[k]
-          break;
+          break
         default:
           // Par défaut, on définit un attribut
           dom.setAttribute(k, attrs[k])

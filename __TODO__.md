@@ -1,4 +1,6 @@
-
+* Faire une classe step pour les étapes qui soit enregistrée dans la base
+  - dans la liste, enregistrer seulement les ID des steps
+  - dans les items, associer l'ID avec le temps
 
 * Faire une classe 'Listing' ? (pour la gestion de tous les listings)
 * Faire une classe 'Form' ? (car les méthodes se ressemblent)

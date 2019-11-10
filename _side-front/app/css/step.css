@@ -1,0 +1,24 @@
+ul#list-steps {
+
+}
+ul#list-steps > li > input[type="text"] {
+  display:inline-block;
+  border:0;
+  font-family:inherit;
+  font-size:inherit;
+  font-style:inherit;
+  background-color:inherit;
+}
+ul#list-steps > li > .titre {
+  padding:2px 4px;
+  width:calc(40% - 8px);
+}
+ul#list-steps > li > .description {
+  padding:2px 4px;
+  width:calc(50% - 8px);
+}
+ul#list-steps > li > .nombre_jours {
+  padding:2px 2px;
+  width:calc(10% - 4px);
+  text-align:center;
+}

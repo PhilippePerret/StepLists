@@ -270,6 +270,20 @@ function DGet(DOMId){
   Il faut que la méthode qui construit appelle UI.setPictosAide(<container>)
 
 **/
+function transmute(de, vers, property){
+  if (undefined != de[property]){
+    vers[property] = de[property]
+    delete de[property]
+  }
+  return [de,vers]
+}
+function transmuteAttribute(de,vers,property){
+  if (de[property]){
+    vers.setAttribute(property, de[property])
+    delete de[property]
+  }
+  return [de,vers]
+}
 function DCreate(typeElement, params){
   // console.log("DCreate params:", params)
   if ( typeElement === 'AIDE' ) {
@@ -278,28 +292,50 @@ function DCreate(typeElement, params){
   }
   var e = document.createElement(typeElement)
   if(undefined === params) return e
-  if(params.id)     e.id = params.id
-  if(params.class)  e.className = params.class
-  if(params.style)  e.setAttribute('style', params.style)
-  if(params.type)   e.type = params.type
-  if(params.inner)  e.innerHTML = params.inner
-  if(params.src)    e.src = params.src
-  if(params.alt)    e.setAttribute('alt', params.alt)
-  if(undefined !== params.value)  e.value = params.value
-  if(undefined !== params.disabled)  e.disabled = params.disabled
+  for(var prop of ['id','className','type','src','href','value','disabled']){
+    [params, e] = transmute(params, e, prop)
+  }
+  for(var prop of ['style','alt']){
+    [params, e] = transmuteAttribute(params, e, prop)
+  }
+  if(params.class){
+    e.className = params.class
+    delete params.class
+  }
+  if(params.text){
+    e.innerHTML = params.text
+    delete params.text
+  }
+  if(params.inner){
+    if( 'string' === typeof params.inner ){
+      e.innerHTML = params.inner
+    } else {
+      params.inner.map(domEl => e.appendChild(domEl))
+    }
+    delete params.inner
+  }
   if(params.append){
     if(Array.isArray(params.append)){
       params.append.forEach(el => e.appendChild(el))
     } else {
       e.appendChild(params.append)
     }
+    delete params.append
+  }
+  if(params.editable){
+    e.setAttribute('contenteditable','true')
+    delete params.editable
   }
   if(params.attrs){
     for(var attr in params.attrs){
       if(params.attrs[attr] === null) continue
       e.setAttribute(attr, params.attrs[attr])
     }
+    delete params.attrs
   }
+  // Tout ce qui reste dans +params+ doit être ajouté comme attribut
+  for(var prop in params){transmuteAttribute(params, e, prop)}
+
   return e
 }
 

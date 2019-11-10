@@ -11,6 +11,16 @@ class List {
   *** --------------------------------------------------------------------- */
 
   /**
+    | Éléments de l'interface
+  **/
+  static get panel(){return document.querySelector('#lists-panel')}
+  static get form(){return document.querySelector('form#list-form')}
+  static get btnSaveList(){return document.querySelector('form#list-form button#btn-save-list')}
+  static get btnCancelList(){return document.querySelector('form#list-form button#btn-cancel-save-list')}
+  static get idField(){return document.querySelector('form#list-form input#list-id')}
+  static get stepsList(){return this.panel.querySelector('ul#list-steps')}
+
+  /**
     Initialisation du panneau des listes
   **/
   static init(){
@@ -18,6 +28,9 @@ class List {
       , btnMoins  = document.querySelector('div#div-lists div.btn-moins')
       , btnEdit   = document.querySelector('div#div-lists div.btn-edit')
       , btnShow   = document.querySelector('div#div-lists div.btn-show')
+      , divSteps  = this.panel.querySelector('#listbox-list-steps')
+      , btnAddStep = divSteps.querySelector('.btn-plus')
+      , btnSupStep = divSteps.querySelector('.btn-moins')
     btnPlus.addEventListener('click',this.addList.bind(this))
     btnMoins.addEventListener('click',this.removeSelectedList.bind(this))
     btnEdit.addEventListener('click',this.editSelectedList.bind(this))
@@ -27,6 +40,25 @@ class List {
     this.btnSaveList.addEventListener('click', this.saveList.bind(this))
     this.btnCancelList.addEventListener('click',this.cancelSaveList.bind(this))
 
+    // Les boutons pour ajouter ou supprimer une étape
+    btnAddStep.addEventListener('click',this.addStep.bind(this))
+    btnSupStep.addEventListener('click',this.removeStep.bind(this))
+  }
+
+  /**
+    Méthode appelée quand on clique sur le bouton "+" de la liste des
+    étapes.
+  **/
+  static addStep(){
+    const newId = Step.newId()
+    this.stepsList.insertAdjacentHTML('beforeend', Step.defaultLi(newId))
+    let li = this.form.querySelector(`.step#step-${newId}`)
+    li.querySelectorAll('input[type="text"]').forEach(span => span.addEventListener('focus', ()=>{span.select()}))
+    // On focus dans le premier champ (titre)
+    li.querySelector('input[type="text"]').focus()
+  }
+  static removeStep(){
+    console.log("Je vais supprimer l'étape séelectionnée")
   }
 
   /**
@@ -36,20 +68,16 @@ class List {
     return this.listsById[list_id]
   }
 
-  /**
-    | Éléments de l'interface
-  **/
-  static get form(){return document.querySelector('form#list-form')}
-  static get btnSaveList(){return document.querySelector('form#list-form button#btn-save-list')}
-  static get btnCancelList(){return document.querySelector('form#list-form button#btn-cancel-save-list')}
-  static get idField(){return document.querySelector('form#list-form input#list-id')}
 
   static showForm(){this.form.classList.remove('noDisplay')}
   static hideForm(){this.form.classList.add('noDisplay')}
   static resetForm(){
-    // console.log("-> List::resetForm")
-    for(var prop of ['id','titre','description','steps']){
-      document.querySelector(`form#list-form #list-${prop}`).value = ''
+    var prop
+    for(prop of ['id','titre','description']){
+      this.form.querySelector(`#list-${prop}`).value = ''
+    }
+    for(prop of ['steps']){
+      this.form.querySelector(`#list-${prop}`).innerHTML = ''
     }
   }
 
@@ -154,7 +182,6 @@ class List {
     // On doit récupérer la liste des listes
     let listes = await MySql2.execute('SELECT * FROM lists ORDER BY titre')
     for(var liste of listes){
-      liste.steps = String(liste.steps)
       if (liste.sorted_items) liste.sorted_items = String(liste.sorted_items)
       var iList = new List(liste)
       Object.assign(lists, {[iList.id]: iList})
@@ -171,9 +198,35 @@ class List {
     var provData = {}
       , errors = []
 
-    for(var prop of ['id','titre','description','steps']){
+    // On récupère les données du formulaire
+    for(var prop of ['id','titre','description']){
       Object.assign(provData, {[prop]: document.querySelector(`form#list-form #list-${prop}`).value.trim()})
     }
+    // Pour les étapes
+    var steps = []
+    for (var li of this.form.querySelectorAll('#list-steps li')) {
+      var step_data = {id:parseInt(li.getAttribute('data-id'),10)}
+      for (var step_prop of ['titre','description','nombre_jours']){
+        Object.assign(step_data, {[step_prop]: li.querySelector(`.${step_prop}`).value})
+      }
+      if (step_data.titre!=""){
+        step_data.titre.length > 4 || errors.push(`L'étape "${step_data}" doit faire au moins 4 caractères…`)
+        step_data.titre.length < 255 || errors.push(`L'étape "${step_data}" est trop longue (254 caractères max)`)
+      } else {
+        errors.push(`Une étape doit avoir un titre !`)
+      }
+      step_data.description.length < 255 || errors.push(`L'étape "${step_data}" a une description trop longue (254 caractères max)`)
+      if (step_data.nombre_jours!=""){
+        step_data.nombre_jours = parseInt(step_data.nombre_jours, 10)
+        step_data.nombre_jours < 999 || errors.push("Le nombre de jours ne peut excéder 999.")
+      } else {
+        errors.push(`Il faut définir le nombre de jours par défaut d'une étape de travail.`)
+      }
+      steps.push(step_data)
+    }
+    steps.length > 0 || errors.push("Il faut définir les étapes de travail (au moins une) !")
+    provData.stepsData = steps
+
     if ( provData.id == ''){delete provData.id}
     else { provData.id = parseInt(provData.id,10)}
 
@@ -184,13 +237,12 @@ class List {
     }
     provData.description.length < 65000 || errors.push("La description est trop longue (65000 caractères max)")
 
-    provData.steps.length > 0 || errors.push("Les étapes doivent être définies.")
-
     if (errors.length){
       console.error("Des erreurs sont survenues : ", errors.join(CR))
       alert("Des erreurs sont survenues, je ne peux pas enregistrer la liste telle quelle. Consulter la console.")
       return false
     } else {
+      console.log("List::provData est mis à ", provData)
       this.provData = provData
       return true
     }
@@ -221,24 +273,41 @@ class List {
   *** --------------------------------------------------------------------- */
   constructor(data){
     this.data = data
-    // On doit garder une trace des étapes actuelles pour pouvoir checker
-    // et corriger les items (leurs étapes) s'ils existent
-    this.keptSteps = `${this.steps}`
+    console.log("Données liste à l'instanciation : ", data)
   }
 
   // Méthode qui crée la liste
   async create(){
-    var req = "INSERT INTO lists (titre, description, steps, created_at) VALUES (?,?,?, NOW())"
-    var res = await MySql2.execute(req, [this.titre, this.description, this.steps])
+    // Note : quand on crée une liste pour la première fois, +data+ contient
+    // :stepData, la liste des données des étapes de travail
+    // Il faut créer les étapes nouvelles (elles sont reconnaissables au
+    // fait que leur identifiant est négatif)
+    if ( this.data.stepsData ) {
+      await this.saveSteps(this.data.stepsData)
+    }
+    var req = "INSERT INTO lists (titre, description, stepsId, created_at) VALUES (?,?,?, NOW())"
+    var res = await MySql2.execute(req, [this.titre, this.description, this.stepsId])
+    this.data.id = await MySql2.lastInsertId()
+    // Il faut aller définir le paramètre `list_id` des étapes
+    var request = `UPDATE steps SET list_id = ${this.id} WHERE id IN (${this.stepsId})`
+    await MySql2.execute(request)
   }
 
-  async afterUpdate(){
-    if ( undefined === this._items ){
-      await this.loadItems()
+  async beforeUpdate(newValeurs){
+    // Cf. la note dans la méthode create
+    if ( newValeurs.stepsData) {
+      await this.saveSteps.call(this, newValeurs.stepsData)
+      delete this._steps
     }
+    delete newValeurs.stepsData
+    Object.assign(newValeurs, {stepsId: this.stepsId})
+    return newValeurs
+  }
+  async afterUpdate(){
+    await this.reload()
     // S'il y a des items dans cette liste et que les étapes ont été
     // modifiées, il faut checker ce qu'il y a à faire
-    if ( this.items.length && this.keptSteps != this.steps) {
+    if ( this.items.length && this.keptStepsId != this.stepsId) {
       Step.checkAndResolveStepsChanges(this)
     } else {
       if (this.items.length) {
@@ -246,6 +315,60 @@ class List {
       }
     }
     this.updateLi()
+  }
+
+
+  // Procédure de sauvegarde des étapes de travail
+  async saveSteps(stepsData){
+    console.log("-> saveSteps")
+    // console.log("stepsData = ", stepsData)
+    // On conserve la liste courante pour voir s'il y a changement
+    this.oldStepsId = `${this.stepsId}`
+
+    var request, valeurs
+      , stepsId = []
+    for (var stepData of stepsData){
+    // await stepsData.forEach( async stepData => {
+      Object.assign(stepData, {list_id: this.id})
+      var isNewStep = stepData.id < 0
+      if ( isNewStep ) {
+        // <= Nouvelle étape
+        [request, valeurs] = this.stepCreateRequestFor(stepData)
+      } else {
+        // <= Étape existante
+        [request, valeurs] = this.stepUpdateRequestFor(stepData)
+      }
+      await MySql2.execute(request,valeurs)
+      if ( isNewStep ) {
+        stepData.id = await MySql2.lastInsertId()
+      }
+      console.log("Ajout de %d à la liste des steps", stepData.id)
+      stepsId.push(stepData.id)
+    }
+    this.stepsId = stepsId.join(',')
+    // Protection
+    if ( this.data.stepsId.length > 254 ) {
+      console.error("La longueur de la données étapes est malheureusement trop longue…", this.stepsId)
+    }
+    console.log("À la fin de List.saveSteps, this.stepsId = ", this.stepsId, this.data.stepsId)
+    if ( this.oldStepsId != this.stepsId ) {
+      console.warn("Les données étapes ont changé, il faudrait les checker")
+      // TODO
+    }
+  }
+  stepCreateRequestFor(dStep){
+    return ["INSERT INTO steps "
+      + "(titre, list_id, description, nombreJours, created_at, updated_at)"
+      + " VALUES (?, ?, ?, ?, NOW(), NOW())"
+      , [dStep.titre, this.id, dStep.description, dStep.nombre_jours]
+    ]
+  }
+  stepUpdateRequestFor(dStep){
+    return ["UPDATE steps "
+      + "SET titre = ?, description = ?, nombreJours = ?, updated_at = NOW() "
+      + "WHERE id = ?"
+      , [dStep.titre, dStep.description, dStep.nombre_jours, dStep.id]
+    ]
   }
 
   // Actualisation du LI de la liste dans le DOM (et observation)
@@ -283,12 +406,17 @@ class List {
     Méthode pour éditer la liste (peupler le formulaire, qui doit
     déjà être ouvert)
   **/
-  edit(){
+  async edit(){
     List.resetForm()
-    for(var prop of ['id','titre','description','steps']){
+    if ( undefined === this._items ){ await this.load() /* + étapes surtout */}
+
+
+    for(var prop of ['id','titre','description']){
       var val = this[prop] || ''
       document.querySelector(`form#list-form #list-${prop}`).value = val
     }
+    // Il faut construire les étapes (il y en a au moins une)
+    this.steps.map(step => step.build())
   }
   /**
     Méthode qui affiche les items de la liste
@@ -302,7 +430,7 @@ class List {
     Item.listing.innerHTML = ""
     // Peupler la section des items
     if ( undefined === this._items ){
-      await this.loadItems()
+      await this.load()
     }
     var liste
     if ( this.sorted_items ) {
@@ -330,9 +458,22 @@ class List {
   }
 
   /**
-    Pour relever tous les items de la liste
+    Pour tout recharger (p.e. après un update, pour être sûr d'avoir
+    les dernières valeurs)
   **/
-  async loadItems(){
+  async reload(){
+    for(var prop of ['_items','_steps','modified','dataSteps','_li','oldStepsId']){
+      delete this[prop]
+    }
+    await this.load()
+  }
+  /**
+    Pour relever tous les items de la liste et toutes ses étapes
+  **/
+  async load(){
+    // On charge les étapes
+    await this.loadSteps()
+    // On charge les items
     this._items = {}
     var items = await MySql2.execute('SELECT * FROM items WHERE list_id = ?', [this.id])
     for(var dataItem of items){
@@ -347,22 +488,26 @@ class List {
     return this._items
   }
 
-  // Retourne la liste des étapes (comme Array)
-  // Note : dans la base, c'est un string
-  get aSteps(){
-    if ( undefined === this._asteps ) {
-      this._asteps = this.steps.split(CR)
-    } return this._asteps
+  get steps(){
+    if ( undefined === this._steps ){
+      this._steps = []
+      this.dataSteps.forEach(stepData => this._steps.push(new Step(stepData)))
+    } return this._steps
   }
 
-  /**
-    Retourne la liste des instances {Step} des étapes de la liste courante
-  **/
-  get iSteps(){
-    if (undefined === this._isteps){
-      this._isteps = this.aSteps.map(dStep => new Step(dStep))
-    } return this._isteps
+  // Retourne la liste des étapes (comme Array)
+  // Note : dans la base, c'est un string des Identifiants de Steps
+  // Ici,
+  get aSteps(){ return this.steps }
+  get iSteps(){ return this.steps }
+
+  async loadSteps(){
+    var request = `SELECT * FROM steps WHERE id IN (${this.stepsId})`
+    // console.log("Requête :", request)
+    this.dataSteps = await MySql2.execute(request)
+    console.log("steps loadées : ", this.dataSteps)
   }
+
 
   /**
     | Méthodes de données fixe
@@ -376,8 +521,8 @@ class List {
   set sorted_items(v){this.data.sorted_items = v}
   get type(){return this.data.type}
   set type(v){this.data.type = v}
-  get steps(){return this.data.steps}
-  set steps(v){this.data.steps = v}
+  get stepsId(){return this.data.stepsId}
+  set stepsId(v){this.data.stepsId = v}
   get created_at(){return this.data.created_at}
   set created_at(v){this.data.created_at = v}
   get updated_at(){return this.data.updated_at}

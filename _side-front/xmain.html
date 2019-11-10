@@ -18,6 +18,7 @@
 <link rel="stylesheet" href="app/css/item.css" />
 <link rel="stylesheet" href="app/css/list.css" />
 <link rel="stylesheet" href="app/css/macos-like.css" />
+<link rel="stylesheet" href="app/css/step.css" />
   </head>
   <body>
 
@@ -39,6 +40,13 @@
           <li onclick="UI.showPanel('prefsPanel')">Préférences</li>
         </ul>
       </div>
+
+
+      <!--
+        |
+        | PANNEAU DES LISTES
+        |
+      -->
       <div id="lists-panel" class="noDisplay">
         <h1 class="panel-title">Listes de travail</h1>
 
@@ -73,8 +81,17 @@
             <textarea id="list-description" rows="8" cols="80"></textarea>
           </div>
           <div class="row">
-            <label for="list-steps">Étapes (titre[::nombre jours défaut[::description]])</label>
-            <textarea id="list-steps" rows="16" cols="80"></textarea>
+            <label>Étapes <span class="explication">(titre - nombre de jours par défaut)</span></label>
+            <!-- LISTE DES ÉTAPES -->
+            <div id="listbox-list-steps" class="listbox-oslike">
+              <ul id="list-steps"></ul>
+              <div class="btn btn-plus">+</div>
+              <div class="btn btn-moins">−</div>
+              <div class="other-btns btns-selected hidden">
+                <div class="btn btn-up" title="Remonter l'étape">⬆︎</div>
+                <div class="btn btn-down" title="Descendre l'étape">⬇︎</div>
+              </div>
+            </div>
           </div>
           <div class="row buttons">
             <button type="button" name="Cancel" id="btn-cancel-save-list">Renoncer</button>
@@ -93,9 +110,7 @@
 
         <!-- LISTE DES ITEMS -->
         <div id="div-list-items" class="listbox-oslike">
-          <ul id="item-list">
-
-          </ul>
+          <ul id="item-list"></ul>
           <div class="btn btn-plus">+</div>
           <div class="btn btn-moins">−</div>
           <div class="other-btns btns-selected hidden">

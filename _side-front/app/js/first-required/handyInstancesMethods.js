@@ -12,6 +12,10 @@
 
 **/
 async function updateInstance(newValeurs){
+  console.log("-> updateInstance avec : ", newValeurs)
+  if ( 'function' == typeof this.beforeUpdate ) {
+    newValeurs = await this.beforeUpdate.call(this, newValeurs)
+  }
   // On ne prend en compte que les valeurs modifiées
   var modValues = {}
   var columns = []
@@ -22,6 +26,11 @@ async function updateInstance(newValeurs){
       valeurs.push(newValeurs[prop])
       Object.assign(modValues, {[prop]: newValeurs[prop]})
     }
+  }
+  // Les étapes
+  if ( this.stepsId != this.oldStepsId ){
+    columns.push('stepsId = ?')
+    valeurs.push(newValeurs.stepsId)
   }
   if ( valeurs.length < 1 ){
     console.log("PAS DE MODIFICATION")
@@ -35,6 +44,8 @@ async function updateInstance(newValeurs){
   Object.assign(modValues, {updated_at: new Date()})
   valeurs.push(this.id)
   var request = `UPDATE ${this.constructor.name}s SET ${columns.join(', ')} WHERE id = ?`
+  console.log("--- REQUÊTE : ", request)
+  console.log("--- VALEURS :", valeurs)
   var res = await MySql2.execute(request,valeurs)
   // console.log("Résultat de la requête %s : ", request, res)
   // console.log("avec les valeurs : ", valeurs)
