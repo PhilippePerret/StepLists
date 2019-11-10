@@ -101,7 +101,7 @@ class Item {
         cmd = actionValue
     }
     cmd = cmd.replace(/\"/g,'\\"')
-    cmd = `bash -c ". /Users/philippeperret/.bash_profile; shopt -s expand_aliases\n${cmd}"`
+    cmd = `bash -c ". ${App.homeDirectory}/.bash_profile; shopt -s expand_aliases\n${cmd}"`
     console.log("Commande exécutée : %s", cmd)
     try {
       exec(cmd, (error, stdout)=>{
