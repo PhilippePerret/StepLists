@@ -1,10 +1,10 @@
 'use strict'
 
 const MOIS = {
-  0: {
-      long: 'janvier'
-    , short: 'jan'
-    }
+    0: {
+        long: 'janvier'
+      , short: 'jan'
+      }
   , 1: {
       long: 'février'
     , short: 'fév'

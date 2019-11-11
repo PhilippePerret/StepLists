@@ -41,9 +41,13 @@ __WARNING__
         -->
         <div id="div-lists" class="listbox-oslike">
           <div class="header-tools">
+            <span>Classement :</span>
             <select class="sort-type">
-              <option value="alpha">classement alphabétique</option>
-              <option value="echea">classement par échéance</option>
+              <option value="alphaSorting">alphabétique</option>
+              <option value="alphaInvSorting">alphabétique inverse</option>
+              <option value="echeanceSorting">par prochaine échéance</option>
+              <option value="echeanceFinSorting">par échéance de fin</option>
+              <option value="echeanceInvSorting">par prochaine échéance (inverse)</option>
             </select>
           </div>
           <ul id="lists">
@@ -104,10 +108,13 @@ __WARNING__
         <!-- LISTE DES ITEMS -->
         <div id="div-list-items" class="listbox-oslike">
           <div class="header-tools">
+            Classement
             <select class="sort-type">
-              <option value="alphab">classement alphabétique</option>
-              <option value="echean">classement par échéance</option>
-              <option value="custom">classement défini</option>
+              <option value="alphabSorting">alphabétique</option>
+              <option value="alphabInvSorting">alphabétique inverse</option>
+              <option value="echeanceSorting">par prochaine échéance</option>
+              <option value="echeanceFinSorting">par échéance de fin</option>
+              <option value="customSorting">défini</option>
             </select>
           </div>
           <ul id="item-list"></ul>

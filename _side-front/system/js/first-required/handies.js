@@ -6,8 +6,10 @@ function raise(msgErr) {
 }
 
 function humanDateFor(date){
-  const hd = new Date(date)
+  if ( ! date ) return ''
+  const hd = date instanceof Date ? date : new Date(date)
   var jour = hd.getDate()
+  console.log("--- mois : ", hd.getMonth())
   var mois = MOIS[hd.getMonth()].long
   var anne = hd.getFullYear()
   return `${jour} ${mois} ${anne}`
@@ -23,6 +25,12 @@ function mmddyyyy(date, delimiter){
   } else {
     return ''
   }
+}
+function ddmmyyyy(date, delimiter){
+  delimiter = delimiter || '/'
+  if (false === (date instanceof Date)) date = new Date(date)
+  console.log("date, date.getDate() = ", date, date.getDate())
+  return [date.getDate(),date.getMonth()+1,date.getFullYear()].join(delimiter)
 }
 // Reçoit une date et retourne une valeur YYYY-MM-DD en fonction délimiteur
 // transmis ('-' par défaut)

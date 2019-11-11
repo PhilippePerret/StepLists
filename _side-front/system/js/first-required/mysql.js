@@ -56,7 +56,19 @@ const MySql2 = {
     if ( undefined === this._promisePool ) {
       this._promisePool = this._pool.promise()
     }
-    const [rows, fields] = await this._promisePool.query(request, values)
+
+    let rows, fields
+    try {
+      [rows, fields] = await this._promisePool.query(request, values)
+    } catch (e) {
+      console.error("PROBLÈME AVEC LA REQUÊTE DÉFINIE PAR :")
+      console.error("Requête : ", request)
+      console.error("Values  : ", values)
+      console.error("Options : ", options)
+      console.error(e)
+
+    }
+
     // console.log("rows (retourné par '%s') : ", request, rows)
     if ( options && (options.only_first||options.only_one||options.first) ){
       return rows[0]

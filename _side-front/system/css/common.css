@@ -6,6 +6,7 @@
 /*
   Styles
  */
+ .small {font-size: 0.85em;}
 .bold { font-weight: bold; }
 .italic { font-style: italic;}
 .warning {color:red;}

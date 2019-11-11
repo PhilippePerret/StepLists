@@ -14,11 +14,14 @@ class List {
     | Éléments de l'interface
   **/
   static get panel(){return document.querySelector('#lists-panel')}
-  static get form(){return document.querySelector('form#list-form')}
+  static get divListing(){return this.panel.querySelector('#div-lists')}
+  static get listing(){return this.divListing.querySelector('#lists')}
+  static get sortTypeMenu(){return this.divListing.querySelector('select.sort-type')}
   static get btnPlus(){return this.panel.querySelector('div#div-lists div.btn-plus')}
   static get btnMoins(){return this.panel.querySelector('div#div-lists div.btn-moins')}
-  static get btnSaveList(){return document.querySelector('form#list-form button#btn-save-list')}
-  static get btnCancelList(){return document.querySelector('form#list-form button#btn-cancel-save-list')}
+  static get form(){return document.querySelector('form#list-form')}
+  static get btnSaveList(){return this.form.querySelector('button#btn-save-list')}
+  static get btnCancelList(){return this.form.querySelector('button#btn-cancel-save-list')}
   static get idField(){return document.querySelector('form#list-form input#list-id')}
   static get divSteps(){return this.form.querySelector('#listbox-list-steps')}
   static get stepsList(){return this.divSteps.querySelector('ul#list-steps')}
@@ -45,7 +48,79 @@ class List {
     btnAddStep.addEventListener('click',this.addStep.bind(this))
     btnSupStep.addEventListener('click',this.removeStep.bind(this))
 
+    // Le menu pour changer de type de classement
+    this.sortTypeMenu.addEventListener('change', this.changeTypeClassement.bind(this))
+
     this.current = null
+  }
+
+  /**
+    Retourne l'instance List de la liste d'identifiant +list_id+
+  **/
+  static getById(list_id){
+    return this.listsById[list_id]
+  }
+
+  /**
+    Reçoit le LI (dom element) et retourne l'instance {List}
+  **/
+  static getByLi(li){
+    return this.getById(li.getAttribute('data-id'))
+  }
+
+  /**
+    Pour modifier le type de classement
+    (méthode appelée par le menu des types de classement)
+  **/
+  static changeTypeClassement(){
+    var sortMethod = this.sortTypeMenu.value
+    // La valeur qui servira à être mise en regard du titre
+    var keyValeurSorting = ((meth)=>{
+      switch(meth){
+        case 'alphaSorting':
+        case 'alphaInvSorting':
+          return null
+        case 'echeanceSorting':
+        case 'echeanceInvSorting':
+          return 'firstEcheance'
+        case 'echeanceFinSorting':
+          return 'firstEcheanceFin'
+      }
+    })(sortMethod)
+    console.log("Méthode de classement utilisée : `%s` (key valeur : %s)", sortMethod, keyValeurSorting)
+    // L'échéance peut/pourrait être définie par deux choses :
+    // 1. une échéance précise définie explicitement pour la liste
+    // 2. l'échéance calculée de la dernière étape
+    var listsClassed = []
+    this.listing.querySelectorAll('li').forEach(li=>listsClassed.push(this.getByLi(li)))
+    listsClassed = listsClassed.sort(this[sortMethod].bind(this))
+    console.log("listsClassed = ", listsClassed)
+    // On classe finalement la liste en ajoutant au titre la valeur retenue
+    listsClassed.map(list => {
+      this.listing.appendChild(list.li)
+      console.log("list[%s] = %s", keyValeurSorting, list[keyValeurSorting])
+      var valeurSorting = keyValeurSorting ? ` <span class="small">(prochaine échéance le ${humanDateFor(list[keyValeurSorting])})</span>` : ''
+      list.li.querySelector('.key-sort').innerHTML = `${valeurSorting}`
+    })
+  }
+
+  // Callback de classement par alphabeth
+  static alphaSorting(a, b){ return a.titre > b.titre ? 1 : -1 }
+  static alphaInvSorting(a, b) { return a.titre < b.titre ? 1 : -1 }
+
+  /**
+    Callback de classement par échéance
+    Note : classer une liste par échéance, c'est la classer par rapport
+    à son item le plus récent
+  **/
+  static echeanceSorting(a,b){
+    return a.firstEcheance > b.firstEcheance ? 1 : -1
+  }
+  static echeanceFinSorting(a,b){
+    return a.firstEcheanceFin > b.firstEcheanceFin ? 1 : -1
+  }
+  static echeanceInvSorting(a,b){
+    return a.firstEcheance < b.firstEcheance ? 1 : -1
   }
 
   /**
@@ -64,12 +139,6 @@ class List {
     console.log("Je vais supprimer l'étape séelectionnée")
   }
 
-  /**
-    Retourne l'instance List de la liste d'identifiant +list_id+
-  **/
-  static getById(list_id){
-    return this.listsById[list_id]
-  }
 
   // Affichage du formulaire et placement du pointeur dans le
   // premier champ
@@ -180,10 +249,9 @@ class List {
       await this.loadLists()
     }
     // On fait un item LI par liste
-    let listUL = document.querySelector('UL#lists')
-    listUL.innerHTML = ''
+    this.listing.innerHTML = ''
     for ( var iList /* TextRow */ of Object.values(this.listsById) ) {
-      listUL.appendChild(iList.li)
+      this.listing.appendChild(iList.li)
       iList.observe()
     }
   }
@@ -332,6 +400,8 @@ class List {
   }
   async afterUpdate(){
     await this.reload()
+    delete this._echeance
+    delete this._echeanceFin
     // S'il y a des items dans cette liste et que les étapes ont été
     // modifiées, il faut checker ce qu'il y a à faire
     if (this.stepsHasChanged) {
@@ -350,11 +420,17 @@ class List {
     this.unsavedChanges
   **/
   async saveChanges(){
+    console.log("-> saveChanges")
+    console.log("this.unsavedChanges: ", this.unsavedChanges)
     var keys = Object.keys(this.unsavedChanges)
     if ( keys.length ){
+      for (var prop in this.unsavedChanges){
+        this[prop] = this.unsavedChanges[prop]
+      }
       await this.updateInDB(keys)
       this.unsavedChanges = {}
     }
+    console.log("<- saveChanges")
   }
 
   // Procédure de sauvegarde des étapes de travail
@@ -423,7 +499,7 @@ class List {
 
   // Méthode qui construit la liste dans la liste des listes
   build(){
-    document.querySelector('UL#lists').appendChild(this.li)
+    List.listing.appendChild(this.li)
     this.observe()
   }
 
@@ -502,7 +578,7 @@ class List {
     if ( undefined === this._items ){ await this.load() }
     var liste
     if ( this.sorted_items ) {
-      liste = this.sorted_items.split()
+      liste = this.sortedItems
     } else {
       liste = Object.values(this.items)
     }
@@ -526,14 +602,18 @@ class List {
     Actualise les données de la liste dans la base de données
   **/
   async updateInDB(props){
+    const my = this
     var columns = []
       , valeurs = []
     props.forEach(prop => {
       columns.push(`${prop} = ?`)
-      valeurs.push(this[prop])
+      valeurs.push(my[prop])
     })
+    valeurs.push(this.id)
     var request = `UPDATE lists SET ${columns.join(', ')} WHERE id = ?`
     var result = await MySql2.execute(request, valeurs)
+    // On recharge pour tenir en compte des changements
+    await this.reload()
   }
 
   // Retourne la liste des {Item}s classés (attention, ne pas confondre avec la
@@ -545,7 +625,7 @@ class List {
   get itemsById(){return this._itemsbyid || defP(this,'_itemsbyid',this.setItemsByIds())}
   setItemsByIds(){
     var byId = {}
-    this.items.forEach(item => Object.assign(byId, {[item.id]: item}))
+    Object.values(this.items).forEach(item => Object.assign(byId, {[item.id]: item}))
     return byId
   }
   /**
@@ -557,9 +637,10 @@ class List {
   // LI de la liste
   get li(){
     if ( undefined === this._li ){
-      var li = document.createElement('LI')
-      li.innerHTML = this.titre
-      this._li = li
+      this._li = DCreate('LI', {'data-id':this.id, class:'list', inner:[
+          DCreate('SPAN',{class:'titre', text:this.titre})
+        , DCreate('SPAN', {class:'key-sort', text:''})
+      ]})
     } return this._li
   }
 
@@ -568,9 +649,10 @@ class List {
     les dernières valeurs)
   **/
   async reload(){
-    for(var prop of ['_items','_steps','modified','dataSteps','_li','oldStepsId']){
+    for(var prop of ['_items','_steps','_sorted_items','_firstecheance','_firstecheancefin','_li','modified','dataSteps','_li','oldStepsId']){
       delete this[prop]
     }
+    this.isLoaded = false
     await this.load()
   }
   /**
@@ -594,6 +676,21 @@ class List {
   /**
     | Méthodes de données volatiles
   **/
+
+  /**
+    Retourne la première échéance prochaine
+    Puisqu'il s'agit d'une liste, la première échéance prochaine correspond à
+    la plus prochaine échéance de sa liste d'items.
+    +firstEcheanceFin+ retourne l'échéance de fin complète de l'item la plus
+    proche.
+  **/
+  get firstEcheance(){
+    return this._firstecheance || defP(this,'_firstecheance', this.defineFirstEcheance().first)
+  }
+  get firstEcheanceFin(){
+    return this._firstecheancefin || defP(this,'_firstecheancefin', this.defineFirstEcheance().firstFin)
+  }
+
   get items(){
     return this._items
   }
@@ -607,12 +704,6 @@ class List {
       })
     } return this._steps
   }
-
-  // Retourne la liste des étapes (comme Array)
-  // Note : dans la base, c'est un string des Identifiants de Steps
-  // Ici,
-  get aSteps(){ return this.steps }
-  get iSteps(){ return this.steps }
 
   async loadSteps(){
     var request = `SELECT * FROM steps WHERE id IN (${this.stepsId})`
@@ -646,6 +737,33 @@ class List {
 
   // Pour marquer la donnée modifiée
   setModified(v){v = v || false; this.modified = v}
+
+  /**
+    Définit et retourne la première plus proche échéance de la liste
+    cf. firstEcheance
+    Fonctionnement : on passe en revue la liste des éléments et on
+    prend la plus proche échéance
+  **/
+  async defineFirstEcheance(){
+    console.log("-> defineFirstEcheance de “%s”", this.titre)
+    var first = null
+      , firstFin = null
+    if ( undefined === this._items ) await this.load()
+    Object.values(this.items).forEach(item => {
+      if ( !first || (item.echeance && item.echeance < first)) {
+        first = item.echeance
+      }
+      if ( !firstFin || (item.echeanceFin && item.echeanceFin < firstFin)){
+        firstFin = item.echeanceFin
+      }
+    })
+    this._firstecheance = first
+    this._firstecheancefin = firstFin
+    return {
+        first:first         // la première prochaine échéance
+      , firstFin:firstFin   // la première prochaine échéance de fin d'item
+    }
+  }
 
 }
 List.prototype.update = updateInstance

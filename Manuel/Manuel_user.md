@@ -2,10 +2,17 @@
 
 * [Présentation]{#presentation}
 * [Les listes](#leslistes)
+  * [Définir les étapes d'une liste](#definelistssteps)
 * [Les items de liste](#itemsdeliste)
   * [Édition des items de liste](#editlistitem)
 
 ## Les listes {#leslistes}
+
+### Définir les étapes d'une liste {#definelistssteps}
+
+Les étapes d'une liste se définissent en éditant la liste et en renseignant le champ `étapes`.
+
+> Note : pour que les calculs d'échéance soient valides, il faut que la première étape soit toujours une étape "en attente", donc l'étape d'un travail (item) qui n'est pas encore mis en chantier.
 
 ---
 

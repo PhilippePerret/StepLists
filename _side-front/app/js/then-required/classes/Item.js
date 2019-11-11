@@ -18,6 +18,7 @@ class Item {
   static get btnMoins(){return this.panel.querySelector('.btn-moins')}
   static get divListing(){return this.panel.querySelector('#div-list-items')}
   static get listing(){return this.divListing.querySelector('ul#item-list')}
+  static get sortTypeMenu(){return this.divListing.querySelector('.sort-type')}
   static get btnUp(){return this.divListing.querySelector('.btn-up')}
   static get btnDown(){return this.divListing.querySelector('.btn-down')}
   static get form(){return document.querySelector('form#item-form')}
@@ -78,7 +79,71 @@ class Item {
     // Pour forcer l'affichage à bien se régler
     this.current = null
 
+    // Pour observer le menu du type de classement
+    this.sortTypeMenu.addEventListener('change',this.onChangeSortingType.bind(this))
+
   }// /init
+
+  static getById(item_id){
+    return List.current.items[item_id]
+  }
+  /**
+    Reçoit le LI (dom element) et retourne l'instance {Item}
+  **/
+  static getByLi(li){
+    return this.getById(li.getAttribute('data-id'))
+  }
+
+
+  /**
+    Règle l'ordre d'affichage en fonction du type d'affichage voulu
+  **/
+  static onChangeSortingType(){
+    var method = this.sortTypeMenu.value
+    var keyValeur = ((meth)=>{
+      switch(meth){
+        case 'alphabSorting':
+        case 'alphabInvSorting':
+        case 'customSorting':
+          return null
+        case 'echeanceSorting': return 'echeance'
+        case 'echeanceFinSorting': return ''
+      }
+    })(method)
+    console.log("méthode de classement : `%s`, clé de valeur : `%s`", method, keyValeur)
+
+    var listsClassed = []
+    this.listing.querySelectorAll('li').forEach(li=>listsClassed.push(this.getByLi(li)))
+    if ( method == 'customSorting' ){
+      // <= Le classement défini par l'utilisateur
+      // => Il suffit d'afficher les items dans l'ordre
+      if (List.current.sorted_items){
+        List.current.sorted_items.split(';').forEach( item_id => {
+          this.listing.appendChild(this.getById(item_id).li)
+        })
+      } else {
+        alert("Pas de classement propre défini. Pour l'obtenir, déplacer les items à l'aide des flèches puis enregistrer la liste.")
+      }
+    } else {
+      listsClassed = listsClassed.sort(this[method].bind(this))
+      console.log("listsClassed = ", listsClassed)
+      // On classe finalement la liste en ajoutant au titre la valeur retenue
+      listsClassed.map(item => {
+        this.listing.appendChild(item.li)
+        // console.log("item[%s] = %s", keyValeur, item[keyValeur])
+        // var valeurSorting = keyValeurSorting ? ` <span class="small">(prochaine échéance le ${humanDateFor(item[keyValeur])})</span>` : ''
+        // list.li.querySelector('.key-sort').innerHTML = `${valeurSorting}`
+      })
+    }
+  }
+
+  /**
+    Callbacks pour les classements
+  **/
+  static alphabSorting(a,b){return a.titre > b.titre ? 1 : -1}
+  static alphabInvSorting(a,b){return a.titre < b.titre ? 1 : -1}
+  static echeanceSorting(a,b){return a.echeance > b.echeance ? 1 : -1}
+  static echeanceFinSorting(a,b){return a.echeanceFin > b.echeanceFin ? 1 : -1}
 
   /**
     Définit les dimensions utiles
@@ -215,7 +280,7 @@ class Item {
     Fonctionne dans les deux "sens" : peut être appelé directement avec un
     item ou peut être appelée par la méthode 'select' de l'item
   **/
-  select(item){
+  static select(item){
     this._current = item
     item.select()
   }
@@ -237,7 +302,7 @@ class Item {
       this._current.select()
       this.buttonsSelect.classList.remove('hidden')
       // Peut-on passer à l'étape suivante ?
-      var nextEnable = v.indexCurrentStep < v.list.aSteps.length - 1
+      var nextEnable = v.indexCurrentStep < v.list.steps.length - 1
       this.panel.querySelector('.btn-next-step').classList[nextEnable?'remove':'add']('hidden')
       var prevEnable = v.indexCurrentStep > 0
       this.panel.querySelector('.btn-prev-step').classList[prevEnable?'remove':'add']('hidden')
@@ -522,6 +587,9 @@ class Item {
     this.updated_at = new Date() // provisoirement
     delete this._asteps
     delete this._currentstep
+    delete this._echeance
+    delete this.list._firstEcheance
+    delete this.list._firstEcheanceFin
     this.decomposeTypeAndValueInActions()
     this.updateLi()
     this.show() // pour actualiser les informations
@@ -706,14 +774,24 @@ class Item {
   get indexCurrentStep(){
     return this.aSteps.length
   }
+
   // Liste des valeurs des étapes exécutées
   get aSteps(){
     return this._asteps || defP(this,'_asteps', this.defineaSteps())
   }
-  defineaSteps(){
-    if (this.steps) return this.steps.split(';')
-    else return []
+
+  /**
+    Retourne l'échéance (virtuelle) de l'item courant
+    Cette échéance est calculée en fonction
+    Elle est nulle si l'étape courante est la première
+  **/
+  get echeance(){
+    return this._echeance || defP(this,'_echeance',this.defineEcheance().echeance)
   }
+  get echeanceFin(){
+    return this._echeanceFin || defP(this,'_echeanceFin',this.defineEcheance().echeanceFin)
+  }
+
 
   get action1Value(){return this._a1value}
   get action1Type(){return this._a1type}
@@ -768,6 +846,33 @@ class Item {
     return dones
   }
 
+  defineaSteps(){
+    if (this.steps) return this.steps.split(';')
+    else return []
+  }
+
+  defineEcheance(){
+    console.log("-> defineEcheance de “%s”",this.titre)
+    var eche = null
+      , echeFin = null
+    if ( this.indexCurrentStep /* > 0 => item démarré */){
+      // Pour calculer l'échéance, on prend le temps de réalisation espérée
+      // pour l'étape courante (expectedNext) et on lui ajoute le nombre de
+      // jours pour les étapes restantes
+      eche = this.expectedNext /* une {Date} */
+      echeFin = this.expectedNext
+      var stepCount = this.list.steps.count
+      for(var istep = this.indexCurrentStep+1; istep < stepCount; ++istep){
+        echeFin = echeFin.addDays(this.list.steps[istep].nombreJours)
+      }
+    }
+    console.log("Item «%s»\nProchaine échéance : %s\nÉchéance fin : %s", this.titre, eche, echeFin)
+    this._echeance = eche
+    this._echeanceFin = echeFin
+    return {
+      echeance:eche, echeanceFin:echeFin
+    }
+  }
 }
 
 Item.prototype.update = updateInstance
