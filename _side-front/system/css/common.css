@@ -17,6 +17,9 @@
 }
 
 .noDisplay,
-.notDisplayed {display:none}
-.hidden {visibility:hidden;}
-.visible {visibility:visible;}
+.notDisplayed
+{
+  display:none!important
+}
+.hidden {visibility:hidden!important;}
+.visible {visibility:visible!important;}

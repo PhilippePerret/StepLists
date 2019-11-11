@@ -58,6 +58,7 @@ __WARNING__
         -->
         <form id="list-form" class="noDisplay" method="post" style="width:500px;">
           <input type="hidden" name="list[id]" id="list-id" value="">
+          <input type="hidden" name="list[originalStepsList]" id="list-originalStepsList" value="">
           <div class="row">
             <label for="list-titre">Titre</label>
             <input type="text" id="list-titre" value="">
@@ -119,12 +120,12 @@ __WARNING__
           <fieldset class="last-step">
             <legend>Étape courante</legend>
             <label>Démarrée le </label><span class="date started_at"></span>
-            <label>Attendue pour le </label><span class="date expected_at"></span>
+            <label>, attendue pour le </label><span class="date expected_at"></span>
           </fieldset>
           <div class="selected-item-description"></div>
           <div>
             <label>Créé le </label><span class="date created_at"></span>
-            <label>Modifié le </label><span class="date updated_at"></span>
+            <label>, modifié le </label><span class="date updated_at"></span>
           </div>
         </div>
         <!--

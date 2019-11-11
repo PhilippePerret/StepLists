@@ -80,7 +80,7 @@ class List {
   static hideForm(){this.form.classList.add('noDisplay')}
   static resetForm(){
     var prop
-    for(prop of ['id','titre','description']){
+    for(prop of ['id','titre','description','originalStepsList']){
       this.form.querySelector(`#list-${prop}`).value = ''
     }
     for(prop of ['steps']){
@@ -280,6 +280,8 @@ class List {
       // On affiche les boutons qui permettent de gérer la liste
       document.querySelector('div#div-lists .btns-selected').classList.remove('hidden')
       this.btnMoins.classList.remove('discret')
+      // On charge ses données si c'est nécessaire
+      v.load()
     }
   }
 
@@ -327,7 +329,8 @@ class List {
     await this.reload()
     // S'il y a des items dans cette liste et que les étapes ont été
     // modifiées, il faut checker ce qu'il y a à faire
-    if ( this.items.length && this.keptStepsId != this.stepsId) {
+    if (this.stepsHasChanged) {
+      console.log("La liste des étapes a été modifiée, je dois checker les items.")
       Step.checkAndResolveStepsChanges(this)
     } else {
       if (this.items.length) {
@@ -460,7 +463,15 @@ class List {
     }
     // Il faut construire les étapes (il y en a au moins une)
     this.steps.map(step => step.build())
+    // On mémorise la liste initiale des étapes
+    List.form.querySelector('#list-originalStepsList').value = this.stepsId
   }
+
+  // Retourne true si la liste des étapes a été modifiée
+  get stepsHasChanged(){
+    return this.stepsId != List.form.querySelector('#list-originalStepsList').value
+  }
+
   /**
     Méthode qui affiche les items de la liste
   **/
@@ -472,19 +483,26 @@ class List {
     // Vider la section des items
     Item.listing.innerHTML = ""
     // Peupler la section des items
-    if ( undefined === this._items ){
-      await this.load()
-    }
+    if ( undefined === this._items ){ await this.load() }
     var liste
     if ( this.sorted_items ) {
-      // TODO Lorsqu'on pourra classer les items, c'est la liste
-      // classée qu'on prendra
+      liste = this.sorted_items.split()
     } else {
       liste = Object.values(this.items)
     }
     liste.map(item => item.build())
   }
 
+  get sortedItems(){return this._sorteditems || defP(this,'_sorteditems',this.sortItems())}
+  sortItems(){
+    return this.sorted_items.split(';').map(item_id => this.itemsById[item_id])
+  }
+  get itemsById(){return this._itemsbyid || defP(this,'_itemsbyid',this.setItemsByIds())}
+  setItemsByIds(){
+    var byId = {}
+    this.items.forEach(item => Object.assign(byId, {[item.id]: item}))
+    return byId
+  }
   /**
     |
     | Méthodes d'helpers
@@ -512,17 +530,21 @@ class List {
   }
   /**
     Pour relever tous les items de la liste et toutes ses étapes
+    - Relève des étapes
+    - Relève des items et instanciations
   **/
   async load(){
+    if (this.isLoaded) return
     // On charge les étapes
     await this.loadSteps()
-    // On charge les items
+    // On charge les items et on en fait des instances
     this._items = {}
     var items = await MySql2.execute('SELECT * FROM items WHERE list_id = ?', [this.id])
     for(var dataItem of items){
       var instanceItem = new Item(dataItem)
       Object.assign(this._items, {[instanceItem.id]: instanceItem})
     }
+    this.isLoaded = true
   }
   /**
     | Méthodes de données volatiles
@@ -552,9 +574,9 @@ class List {
     // console.log("Requête :", request)
     this.dataSteps = {}
     var stepsInDB = await MySql2.execute(request)
-    stepsInDB.forEach(dStep => Object.assign(this.dataSteps, {[dStep.id]: dStep}))
+    stepsInDB.forEach(dStep => Object.assign(this.dataSteps, {[String(dStep.id)]: dStep}))
 
-    console.log("steps loadées : ", this.dataSteps)
+    // console.log("steps loadées : ", this.dataSteps)
   }
 
 

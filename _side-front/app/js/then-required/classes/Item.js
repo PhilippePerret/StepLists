@@ -64,6 +64,9 @@ class Item {
     this.divInfos.querySelector('#btn-action2').addEventListener('click',this.onClickActionButton.bind(this,2))
     this.divInfos.querySelector('#btn-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
 
+    // Pour forcer l'affichage à bien se régler
+    this.current = null
+
   }// /init
 
   /**
@@ -75,7 +78,7 @@ class Item {
     }
     // Largeur actuelle du listing
     var listingW    = this.listing.offsetWidth
-    var stepsCount  = List.current.aSteps.length
+    var stepsCount  = List.current.steps.length
     var titreWidth  = 262
     var liPadding   = 12 + (4 * stepsCount)
     this.spanStepWidth = Math.ceil((listingW - (titreWidth + liPadding)) / stepsCount)
@@ -194,6 +197,7 @@ class Item {
   static showForm(){
     this.form.classList.remove('noDisplay')
     this.formIsVisible = true
+    this.form.querySelector('input[type="text"]').focus()
   }
   static hideForm(){
     this.form.classList.add('noDisplay')
@@ -306,7 +310,7 @@ class Item {
   }
 
   static removeSelectedItem(ev){
-    console.error("Destruction d'item demandée (à implémenter)")
+    this.current.destroy()
     return stopEvent(ev)
   }
 
@@ -419,7 +423,7 @@ class Item {
     divDesc.innerHTML   = this.description
     spanCreatedAt.innerHTML = this.created_at.toLocaleDateString('fr-FR')
     spanUpdatedAt.innerHTML = (this.updated_at||this.created_at).toLocaleDateString('fr-FR')
-    spanStartedAt.innerHTML = isStarted ? this.aSteps[this.indexCurrentStep-1] : "En attente"
+    spanStartedAt.innerHTML = isStarted ? this.doneSteps[this.indexCurrentStep-1].date : "En attente"
     spanExpectedAt.innerHTML = isStarted ? this.expectedNext.toLocaleDateString('fr-FR') : '---'
     // Construction des boutons
     var aucuneAction = true
@@ -462,6 +466,7 @@ class Item {
     delete this._currentstep
     this.decomposeTypeAndValueInActions()
     this.updateLi()
+    this.show() // pour actualiser les informations
   }
 
   // Méthode qui construit l'item
@@ -559,15 +564,18 @@ class Item {
   async goToNextStep(nombreJours){
     var spans = this.li.querySelectorAll('span')
     spans[this.indexCurrentStep+1].classList.remove('current')
+    // Identifiant de l'étape courante
+    var newStepId = this.list.steps[this.indexCurrentStep].id
+    console.log("newStepId = ", newStepId)
     var today = new Date()
-    this.aSteps.push(today.toLocaleDateString('en-US'))
+    this.aSteps.push(`${newStepId}:${today.toLocaleDateString('en-US')}`)
     var expectedAt = today.addDays(nombreJours)
     await this.update({steps:this.aSteps.join(';'), expectedNext:expectedAt})
     delete this._asteps
     spans[this.indexCurrentStep+1].classList.add('current')
   }
   goToPrevStep(){
-    alert("Pour le moment, on ne peut pas reculer.")
+    alert("Pour le moment, on ne peut pas reculer. Plus tard, on pourra imaginer le faire pour revoir les informations temporelles.")
   }
   /**
     |
@@ -588,9 +596,8 @@ class Item {
       span.innerHTML = this.titre
       li.appendChild(span)
       // On fabrique un span par étape
-      for(var iStep in this.list.aSteps){
-      // this.list.aSteps.map( step => {
-        var step = this.list.iSteps[iStep]
+      for(var iStep in this.list.steps){
+        var step = this.list.steps[iStep]
         span = document.createElement('SPAN')
         var classNames = ['step']
         if ( iStep < this.indexCurrentStep ) {
@@ -611,33 +618,31 @@ class Item {
     |Propriétés volatiles
   **/
 
-  // Liste (instance List) auquel appartient l'itemp
-  get list(){
-    if (undefined === this._list){
-      this._list = List.getById(this.list_id)
-    } return this._list
+  get doneSteps(){
+    return this._donesteps || defP(this,'_donesteps',this.defineDoneSteps())
   }
 
-  // Retourne le nom de l'étape courante
-  // TODO Plus tard, fonctionner avec des instances ?
+  // Liste (instance List) auquel appartient l'itemp
+  get list(){
+    return this._list || defP(this,'_list', List.getById(this.list_id))
+  }
+
+  // Retourne l'instance {Step} de l'étape courante de l'item
   get currentStep(){
-    if (undefined === this._currentstep){
-      this._currentstep = this.list.aSteps[this.indexCurrentStep]
-    } return this._currentstep
+    return this._currentstep || defP(this,'_currentstep',this.list.steps[this.indexCurrentStep])
   }
   get indexCurrentStep(){
     return this.aSteps.length
   }
   // Liste des valeurs des étapes exécutées
   get aSteps(){
-    if ( undefined === this._asteps ) {
-      if (this.steps){
-        this._asteps = this.steps.split(';')
-      } else {
-        this._asteps = []
-      }
-    } return this._asteps
+    return this._asteps || defP(this,'_asteps', this.defineaSteps())
   }
+  defineaSteps(){
+    if (this.steps) return this.steps.split(';')
+    else return []
+  }
+
   get action1Value(){return this._a1value}
   get action1Type(){return this._a1type}
   get action2Value(){return this._a2value}
@@ -667,7 +672,7 @@ class Item {
   set list_id(v){this.data.list_id = v}
   get expectedNext(){return this.data.expectedNext}
   set expectedNext(v){this.data.expectedNext = v}
-  get steps(){return this.data.steps}
+  get steps(){return this.data.steps||''}
   set steps(v){this.data.steps = v}
   get action1(){return this.data.action1}
   set action1(v){this.data.action1 = v}
@@ -679,6 +684,18 @@ class Item {
   set updated_at(v){this.data.updated_at = v}
   get created_at(){return this.data.created_at}
   set created_at(v){this.data.created_at = v}
+
+  // ---------------------------------------------------------------------
+  // @private
+
+  defineDoneSteps(){
+    var dones = []
+    for(var iStep = 0 ; iStep < this.indexCurrentStep; ++iStep){
+      dones.push(new DoneStep(this, this.aSteps[iStep]))
+    }
+    return dones
+  }
+
 }
 
 Item.prototype.update = updateInstance

@@ -112,7 +112,6 @@ onKeyUpAnswer(e){
   e.stopPropagation(e)
   switch (e.key) {
     case 'Enter':
-      UI.onBlurTextField.bind(UI)() // car pas déclenché au blur du answer field
       if ( this.okButtonIndex === this.defaultButtonIndex) {
         this.onOK(e)
       } else if (this.cancelButtonIndex === this.defaultButtonIndex) {

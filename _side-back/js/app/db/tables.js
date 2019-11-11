@@ -49,6 +49,7 @@ const DB_Tables = [
         , {name:'action2',      type:'TEXT'}
         , {name:'action3',      type:'TEXT'}
         , {name:'created_at',   type:'DATE'}
+        , {name:'updated_at',   type:'DATE'}
       ]
   }
 ]
