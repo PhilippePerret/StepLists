@@ -1,12 +1,17 @@
 * Gestion des items de liste (avec le nouveau fonction des steps)
+  * Pouvoir classer les items dans la liste (sorted_items)
+  * Classer les items par échéance
   * Mettre en rouge si une échéance est passée
-  
+  * Classement :
+    - soit par échéance
+    - soit par ordre alphabétique
+    - soit par ordre défini pour la liste (sorted_items)
+
 * Pouvoir choisir le classement des listes :
   - par ordre alphabétique
   - par ordre de priorité d'échéance (les échéances les plus proches au-dessus)
   => Une fenêtre préférences qui permette d'enregistrer ça
 
-* Pouvoir détruire un item de liste
 * Faire une classe step pour les étapes qui soit enregistrée dans la base
   - dans les items, associer l'ID avec le temps
   - updater la lecture des steps de l'item

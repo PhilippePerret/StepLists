@@ -493,6 +493,35 @@ class List {
     liste.map(item => item.build())
   }
 
+  async removeItem(item){
+    if ( this.sorted_items ){
+      console.log("this.sorted_items au départ : %s", this.sorted_items)
+      var itemsList = this.sorted_items.split(';')
+      var itemIndex = itemsList.indexOf(item.id)
+      itemsList.splice(itemIndex,1)
+      this.sorted_items = itemsList.join(';')
+      console.log("this.sorted_items après : %s", this.sorted_items)
+      await this.updateInDB(['sorted_items'])
+      delete this._sorteditems // pour forcer l'actualisation
+    }
+  }
+
+  /**
+    Actualise les données de la liste dans la base de données
+  **/
+  async updateInDB(props){
+    var columns = []
+      , valeurs = []
+    props.forEach(prop => {
+      columns.push(`${prop} = ?`)
+      valeurs.push(this[prop])
+    })
+    var request = `UPDATE lists SET ${columns.join(', ')} WHERE id = ?`
+    var result = await MySql2.execute(request, valeurs)
+  }
+
+  // Retourne la liste des {Item}s classés (attention, ne pas confondre avec la
+  // propriété `sorted_items` qui est enregistrée)
   get sortedItems(){return this._sorteditems || defP(this,'_sorteditems',this.sortItems())}
   sortItems(){
     return this.sorted_items.split(';').map(item_id => this.itemsById[item_id])

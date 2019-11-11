@@ -452,16 +452,15 @@ class Item {
   // Méthode qui crée le nouvel item
   // Note : à partir des provData
   async create(){
-    let request = "INSERT INTO items (titre, list_id, description, expectedNext, action1, action2, action3, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, NOW())"
-      , valeurs = [this.titre, this.list_id, this.description, this.expectedNext, this.action1, this.action2, this.action3]
+    this.created_at = new Date()
+    let request = "INSERT INTO items (titre, list_id, description, expectedNext, action1, action2, action3, created_at) VALUES (?, ?, ?, ?, ?, ?, ?, ?)"
+      , valeurs = [this.titre, this.list_id, this.description, this.expectedNext, this.action1, this.action2, this.action3, this.created_at]
     // console.log("Je vais enregistrer les données : ", valeurs)
     await MySql2.execute(request, valeurs)
   }
 
-  // async update(newValeurs){
-  //   await updateInstance(this, newValeurs)
-  // }
   afterUpdate(){
+    this.updated_at = new Date() // provisoirement
     delete this._asteps
     delete this._currentstep
     this.decomposeTypeAndValueInActions()
@@ -473,6 +472,22 @@ class Item {
   build(){
     Item.listing.appendChild(this.li)
     this.observe()
+  }
+
+  // Méthode pour détruire l'item de liste
+  async destroy(){
+    // Confirmer la demande
+
+    if ( false === await confirmer(`Voulez-vous vraiment détruire l'item de liste « ${this.titre} » ?\n\nToutes ses infos seront définitivement perdues.`) ) return
+    // Détruire dans l'affichage
+    this.li.remove()
+    // Détruire dans la base de données
+    var request = `DELETE FROM items WHERE ID = ${this.id}`
+    var res = await MySql2.execute(request)
+    // Détruire dans la liste (seulement si sorted_items est défini)
+    if (this.list.sorted_items){this.list.removeItem(this)}
+    // Détruire ici
+    this.current = null
   }
 
   observe(){
