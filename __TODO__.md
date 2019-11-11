@@ -1,5 +1,4 @@
 * Gestion des items de liste (avec le nouveau fonction des steps)
-  * Pouvoir classer les items dans la liste (sorted_items)
   * Classer les items par échéance
   * Mettre en rouge si une échéance est passée
   * Classement :

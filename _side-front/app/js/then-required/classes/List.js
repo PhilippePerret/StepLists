@@ -296,6 +296,11 @@ class List {
   constructor(data){
     this.data = data
     // console.log("Données liste à l'instanciation : ", data)
+
+    // Table pour enregistrer les changements qui ne seront enregistrés (avec
+    // la méthode `saveChanges`) seulement quand un bouton "Actualiser la liste"
+    // sera cliquée
+    this.unsavedChanges = {}
   }
 
   // Méthode qui crée la liste
@@ -333,13 +338,24 @@ class List {
       console.log("La liste des étapes a été modifiée, je dois checker les items.")
       Step.checkAndResolveStepsChanges(this)
     } else {
-      if (this.items.length) {
+      if (this.items && this.items.length) {
         console.log("Aucun item dans cette liste, les étapes peuvent être modifiées sans souci.")
       }
     }
     this.updateLi()
   }
 
+  /**
+    Enregistre dans la table de données les changements mémorisés dans
+    this.unsavedChanges
+  **/
+  async saveChanges(){
+    var keys = Object.keys(this.unsavedChanges)
+    if ( keys.length ){
+      await this.updateInDB(keys)
+      this.unsavedChanges = {}
+    }
+  }
 
   // Procédure de sauvegarde des étapes de travail
   async saveSteps(stepsData){

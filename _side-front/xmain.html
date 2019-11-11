@@ -54,6 +54,12 @@
           LISTE DES LISTES
         -->
         <div id="div-lists" class="listbox-oslike">
+          <div class="header-tools">
+            <select class="sort-type">
+              <option value="alpha">classement alphabétique</option>
+              <option value="echea">classement par échéance</option>
+            </select>
+          </div>
           <ul id="lists">
             <li>Première liste</li>
             <li>Deuxième liste</li>
@@ -89,8 +95,8 @@
               <div class="btn btn-plus">+</div>
               <div class="btn btn-moins">−</div>
               <div class="other-btns btns-selected hidden">
-                <div class="btn btn-up" title="Remonter l'étape">⬆︎</div>
-                <div class="btn btn-down" title="Descendre l'étape">⬇︎</div>
+                <div class="btn btn1 btn-up" title="Remonter l'étape">⬆︎</div>
+                <div class="btn btn2 btn-down" title="Descendre l'étape">⬇︎</div>
               </div>
             </div>
           </div>
@@ -111,13 +117,23 @@
 
         <!-- LISTE DES ITEMS -->
         <div id="div-list-items" class="listbox-oslike">
+          <div class="header-tools">
+            <select class="sort-type">
+              <option value="alphab">classement alphabétique</option>
+              <option value="echean">classement par échéance</option>
+              <option value="custom">classement défini</option>
+            </select>
+          </div>
           <ul id="item-list"></ul>
           <div class="btn btn-plus">+</div>
           <div class="btn btn-moins">−</div>
           <div class="other-btns btns-selected hidden">
-            <div class="btn btn-edit-item" title="Éditer l'item sélectionner">📝</div>
-            <div class="btn btn-prev-step" title="Repasser la sélection à l'étape précédente">◀︎</div>
-            <div class="btn btn-next-step" title="Passer la sélection à l'étape suivante">▶︎</div>
+            <div class="btn btn1 btn-edit-item" title="Éditer l'item sélectionner">📝</div>
+            <div class="btn btn2 btn-prev-step" title="Repasser la sélection à l'étape précédente">◀︎</div>
+            <div class="btn btn3 btn-next-step" title="Passer la sélection à l'étape suivante">▶︎</div>
+            <div class="btn btn4 btn-up" title="Remonter l'item">⬆︎</div>
+            <div class="btn btn5 btn-down" title="Descendre l'item">⬇︎</div>
+            <button type="button" class="btn-save-list noDisplay" style="width:140px;">Actualiser la liste</button>
           </div>
         </div>
 
@@ -134,12 +150,12 @@
           <fieldset class="last-step">
             <legend>Étape courante</legend>
             <label>Démarrée le </label><span class="date started_at"></span>
-            <label>Attendue pour le </label><span class="date expected_at"></span>
+            <label>, attendue pour le </label><span class="date expected_at"></span>
           </fieldset>
           <div class="selected-item-description"></div>
           <div>
             <label>Créé le </label><span class="date created_at"></span>
-            <label>Modifié le </label><span class="date updated_at"></span>
+            <label>, modifié le </label><span class="date updated_at"></span>
           </div>
         </div>
         <!--

@@ -7,11 +7,24 @@
   /* max-width:400px; */
   display:grid;
   grid-template-columns: 30pt 30pt auto;
-  grid-template-rows: auto 30pt;
+  grid-template-rows: 23px auto 30pt;
+}
+
+.listbox-oslike > .header-tools {
+  grid-row:1;
+  grid-column:1/4;
+  /* background-color:#adadad; */
+  border-bottom:1px solid #CCCCCC;
+  text-align:right;
+}
+.listbox-oslike > .header-tools select {
+  /* border:1px solid white; */
+  font-family:arial;
+  font-size:8.9pt;
 }
 .listbox-oslike ul {
   grid-column:1/4;
-  grid-row:1;
+  grid-row:2;
   list-style:none;
   margin:0;
   padding:0;
@@ -33,17 +46,22 @@
 }
 
 .listbox-oslike .other-btns {
+  grid-row:3;
   display:grid;
-  grid-template-columns: 30pt 30pt 30pt auto;
+  grid-template-columns: 30pt 30pt 30pt 30pt 30pt auto;
   grid-template-rows: auto;
   line-height:30pt;
 }
 .listbox-oslike .other-btns .btn {grid-row:1}
-.listbox-oslike .other-btns .btn.btn-edit {
-  grid-column:1;
-}
-.listbox-oslike .other-btns .btn.btn-show {
-  grid-column:2;
+.listbox-oslike .other-btns .btn.btn1 {grid-column:1}
+.listbox-oslike .other-btns .btn.btn2 {grid-column:2}
+.listbox-oslike .other-btns .btn.btn3 {grid-column:3}
+.listbox-oslike .other-btns .btn.btn4 {grid-column:4}
+.listbox-oslike .other-btns .btn.btn5 {grid-column:5}
+
+.listbox-oslike .other-btns button {
+  font-size:inherit;
+  cursor:pointer;
 }
 
 .listbox-oslike .btn {
@@ -63,12 +81,12 @@
 .listbox-oslike .btn-moins
 {
   font-size: 20pt;
+  grid-row:3;
 }
+
 .listbox-oslike .btn-plus {
   grid-column:1;
-  grid-row:2;
 }
 .listbox-oslike .btn-moins {
   grid-column:2;
-  grid-row:2;
 }

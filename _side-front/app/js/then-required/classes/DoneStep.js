@@ -15,7 +15,7 @@ class DoneStep {
     var [stepid, date] = dataStr.split(':')
     this.stepId = parseInt(stepid,10)
     this._simpledate = date
-    console.log("stepId: %d, date: %s", this.stepId, this.date)
+    // console.log("stepId: %d, date: %s", this.stepId, this.date)
   }
 
   /**

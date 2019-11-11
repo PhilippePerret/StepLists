@@ -16,11 +16,14 @@ class Item {
   static get panel(){return UI.itemsPanel}
   static get btnPlus(){return this.panel.querySelector('.btn-plus')}
   static get btnMoins(){return this.panel.querySelector('.btn-moins')}
+  static get divListing(){return this.panel.querySelector('#div-list-items')}
+  static get listing(){return this.divListing.querySelector('ul#item-list')}
+  static get btnUp(){return this.divListing.querySelector('.btn-up')}
+  static get btnDown(){return this.divListing.querySelector('.btn-down')}
   static get form(){return document.querySelector('form#item-form')}
   static get btnSaveItem(){return document.querySelector("button#btn-save-item")}
   static get btnCancelSaveItem(){return document.querySelector("button#btn-cancel-edit-item")}
   static get idField(){return document.querySelector('form#item-form input#item-id')}
-  static get listing(){return document.querySelector('ul#item-list')}
   static get buttonsSelect(){return UI.itemsPanel.querySelector('div.btns-selected')}
   static get divInfos(){return this.panel.querySelector('#selected-item-infos')}
 
@@ -58,12 +61,20 @@ class Item {
     // Pour faire reculer l'item (- 1 étape)
     var btnPrevStep = this.buttonsSelect.querySelector('.btn-prev-step')
     btnPrevStep.addEventListener('click',this.SelectedToPrevStep.bind(this))
+    // Pour remonter ou descendre l'item dans la liste
+    this.btnUp.addEventListener('click', this.moveSelectedUp.bind(this))
+    this.btnDown.addEventListener('click', this.moveSelectedDown.bind(this))
+
     // Observer les boutons d'action véritable, dans le bloc des infos, qui
     // permettent de lancer l'action
     this.divInfos.querySelector('#btn-action1').addEventListener('click',this.onClickActionButton.bind(this,1))
     this.divInfos.querySelector('#btn-action2').addEventListener('click',this.onClickActionButton.bind(this,2))
     this.divInfos.querySelector('#btn-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
 
+    // Tous les boutons permettant de sauver la liste
+    document.querySelectorAll('.btn-save-list').forEach(btn => {
+      btn.addEventListener('click',this.updateCurrentList.bind(this))
+    })
     // Pour forcer l'affichage à bien se régler
     this.current = null
 
@@ -87,6 +98,54 @@ class Item {
     // console.log("listingW = ", listingW)
     // console.log("stepsCount = ", stepsCount)
     // console.log("spanStepWidth", this.spanStepWidth)
+  }
+
+  /**
+    Méthode pour remonter ou descendre l'item
+  **/
+  static moveSelectedUp(ev){
+    var li = this.current.li
+    if ( li.previousSibling ) {
+      li.parentNode.insertBefore(li, li.previousSibling)
+      this.memoriseSortedItems()
+      this.showButtonSaveList()
+    }
+    return stopEvent(ev)
+  }
+  static moveSelectedDown(ev){
+    var li = this.current.li
+    if ( li.nextSibling ) {
+      li.parentNode.insertBefore(li, li.nextSibling.nextSibling)
+      this.memoriseSortedItems()
+      this.showButtonSaveList()
+    }
+    return stopEvent(ev)
+  }
+
+  // Prendre le nouveau classement des items et le mémoriser dans les
+  // changements non enregistrés de la liste de l'item courant
+  static memoriseSortedItems(){
+    var newSortedItems = []
+    this.listing.querySelectorAll('li').forEach(li => {
+      newSortedItems.push(li.getAttribute('data-id'))
+    })
+    newSortedItems = newSortedItems.join(';')
+    Object.assign(this.current.list.unsavedChanges, {sorted_items: newSortedItems})
+  }
+
+  // Afficher le bouton "Actualiser la liste"
+  static showButtonSaveList(){
+    this.divListing.querySelector('.btn-save-list').classList.remove('noDisplay')
+  }
+
+  /**
+    Méthode permettant d'actualiser la liste de l'item courant
+    Cette méthode est utilisée, par exemple, lorsque l'on a fini de
+    classer les items (c'est sa seule fonction pour le moment, mais
+    on pourrait imaginer qu'il y en ait d'autres).
+  **/
+  static updateCurrentList(){
+    this.current.list.saveChanges()
   }
 
   /**
@@ -603,26 +662,24 @@ class Item {
   **/
   get li(){
     if ( undefined === this._li ) {
-      var li = document.createElement('LI')
-      li.className = 'li-item'
-      // On fabrique un span pour le titre
-      var span = document.createElement('SPAN')
-      span.className = 'titre'
-      span.innerHTML = this.titre
-      li.appendChild(span)
+      var span
+      var li = DCreate('LI',{'data-id':this.id, class:'li-item', id:`item-${this.id}`, inner:[
+        DCreate('SPAN',{class:'titre',text:this.titre})
+      ]})
       // On fabrique un span par étape
       for(var iStep in this.list.steps){
         var step = this.list.steps[iStep]
-        span = document.createElement('SPAN')
         var classNames = ['step']
         if ( iStep < this.indexCurrentStep ) {
           classNames.push('done')
         } else if ( iStep == this.indexCurrentStep ) {
           classNames.push('current')
         }
-        span.className = classNames.join(' ')
-        span.setAttribute('style',`width:${Item.spanStepWidth}px;`)
-        span.innerHTML = `&nbsp;${step.titre}&nbsp;`
+        var span = DCreate('SPAN',{
+            class:classNames.join(' ')
+          , style:`width:${Item.spanStepWidth}px;`
+          , text:`&nbsp;${step.titre}&nbsp;`
+        })
         li.appendChild(span)
       }
       this._li = li
