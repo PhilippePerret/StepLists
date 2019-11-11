@@ -15,6 +15,8 @@ class List {
   **/
   static get panel(){return document.querySelector('#lists-panel')}
   static get form(){return document.querySelector('form#list-form')}
+  static get btnPlus(){return this.panel.querySelector('div#div-lists div.btn-plus')}
+  static get btnMoins(){return this.panel.querySelector('div#div-lists div.btn-moins')}
   static get btnSaveList(){return document.querySelector('form#list-form button#btn-save-list')}
   static get btnCancelList(){return document.querySelector('form#list-form button#btn-cancel-save-list')}
   static get idField(){return document.querySelector('form#list-form input#list-id')}
@@ -25,15 +27,13 @@ class List {
     Initialisation du panneau des listes
   **/
   static init(){
-    let btnPlus   = document.querySelector('div#div-lists div.btn-plus')
-      , btnMoins  = document.querySelector('div#div-lists div.btn-moins')
-      , btnEdit   = document.querySelector('div#div-lists div.btn-edit')
+    let btnEdit   = document.querySelector('div#div-lists div.btn-edit')
       , btnShow   = document.querySelector('div#div-lists div.btn-show')
       , divSteps  = this.panel.querySelector('#listbox-list-steps')
       , btnAddStep = divSteps.querySelector('.btn-plus')
       , btnSupStep = divSteps.querySelector('.btn-moins')
-    btnPlus.addEventListener('click',this.addList.bind(this))
-    btnMoins.addEventListener('click',this.removeSelectedList.bind(this))
+    this.btnPlus.addEventListener('click',this.addList.bind(this))
+    this.btnMoins.addEventListener('click',this.removeSelectedList.bind(this))
     btnEdit.addEventListener('click',this.editSelectedList.bind(this))
     btnShow.addEventListener('click',this.showSelectedList.bind(this))
 
@@ -44,6 +44,8 @@ class List {
     // Les boutons pour ajouter ou supprimer une étape
     btnAddStep.addEventListener('click',this.addStep.bind(this))
     btnSupStep.addEventListener('click',this.removeStep.bind(this))
+
+    this.current = null
   }
 
   /**
@@ -69,8 +71,12 @@ class List {
     return this.listsById[list_id]
   }
 
-
-  static showForm(){this.form.classList.remove('noDisplay')}
+  // Affichage du formulaire et placement du pointeur dans le
+  // premier champ
+  static showForm(){
+    this.form.classList.remove('noDisplay')
+    this.form.querySelector('input[type="text"]').focus()
+  }
   static hideForm(){this.form.classList.add('noDisplay')}
   static resetForm(){
     var prop
@@ -98,6 +104,7 @@ class List {
     this.resetForm()
     return stopEvent(ev)
   }
+
   /**
     Méthode appelée quand on veut éditer une liste (bouton "📝")
   **/
@@ -116,9 +123,7 @@ class List {
     if (this.idField.value == '') { await this.createList() }
     else {await this.updateList()}
   }
-  static async cancelSaveList(){
-    this.hideForm()
-  }
+  static async cancelSaveList(){this.hideForm()}
 
   /**
     Méthode appelée pour créer la nouvelle liste
@@ -146,6 +151,7 @@ class List {
   }
 
   static async removeSelectedList(ev){
+    if(!this.current)return // pas de liste sélectionnée
     if (await confirmer(`Êtes-vous certain de vouloir détruire la liste « ${this.current.titre} » (et tous ses éléments) ?\n\nCette opération est IRRÉVERSIBLE.`)){
       this.current.destroy()
     } else {
@@ -259,7 +265,11 @@ class List {
     if (this._current){
       this._current.li.classList.remove('selected')
       delete this._current
+    }
+    if (!this.current){
+      // Par exemple au chargement
       document.querySelector('div#div-lists .btns-selected').classList.add('hidden')
+      this.btnMoins.classList.add('discret')
     }
     if ( v ) {
       this._current = v
@@ -269,6 +279,7 @@ class List {
       v.li.classList.add('selected')
       // On affiche les boutons qui permettent de gérer la liste
       document.querySelector('div#div-lists .btns-selected').classList.remove('hidden')
+      this.btnMoins.classList.remove('discret')
     }
   }
 
@@ -282,7 +293,7 @@ class List {
   *** --------------------------------------------------------------------- */
   constructor(data){
     this.data = data
-    console.log("Données liste à l'instanciation : ", data)
+    // console.log("Données liste à l'instanciation : ", data)
   }
 
   // Méthode qui crée la liste

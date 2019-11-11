@@ -10,7 +10,7 @@
 .italic { font-style: italic;}
 .warning {color:red;}
 .notice { color: blue; }
-
+.discret {opacity:0.5;}
 .explication {
   font-size:0.85em;
   font-style:italic;

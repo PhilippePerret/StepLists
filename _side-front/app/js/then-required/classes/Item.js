@@ -14,6 +14,8 @@ class Item {
 
   // Les éléments graphiques
   static get panel(){return UI.itemsPanel}
+  static get btnPlus(){return this.panel.querySelector('.btn-plus')}
+  static get btnMoins(){return this.panel.querySelector('.btn-moins')}
   static get form(){return document.querySelector('form#item-form')}
   static get btnSaveItem(){return document.querySelector("button#btn-save-item")}
   static get btnCancelSaveItem(){return document.querySelector("button#btn-cancel-edit-item")}
@@ -28,10 +30,8 @@ class Item {
   **/
   static init(){
     // Surveillance des boutons + et -
-    let btnPlus   = document.querySelector('div#div-list-items div.btn-plus')
-      , btnMoins  = document.querySelector('div#div-list-items div.btn-moins')
-    btnPlus.addEventListener('click', this.addItemToCurrentList.bind(this))
-    btnMoins.addEventListener('click', this.removeSelectedItem.bind(this))
+    this.btnPlus.addEventListener('click', this.addItemToCurrentList.bind(this))
+    this.btnMoins.addEventListener('click', this.removeSelectedItem.bind(this))
 
     // Surveillance du menu, dans le formulaire, pour choisir les actions
     for(var i of [1,2,3]){
@@ -161,22 +161,30 @@ class Item {
   static get current(){return this._current}
   static set current(v){
     if (this._current) {
+      this._current.deselect()
+      delete this._current
+    }
+    if ( !this._current){
+      // Par exemple à l'affichage
       this.buttonsSelect.classList.add('hidden')
       this.divInfos.classList.add('noDisplay')
-      this._current.deselect()
+      this.btnMoins.classList.add('discret')
     }
-    this._current = v
-    this._current.select()
-    this.buttonsSelect.classList.remove('hidden')
-    // Peut-on passer à l'étape suivante ?
-    var nextEnable = v.indexCurrentStep < v.list.aSteps.length - 1
-    this.panel.querySelector('.btn-next-step').classList[nextEnable?'remove':'add']('hidden')
-    var prevEnable = v.indexCurrentStep > 0
-    this.panel.querySelector('.btn-prev-step').classList[prevEnable?'remove':'add']('hidden')
-
-    // Il faut afficher les infos
-    this.divInfos.classList.remove('noDisplay')
-    v.show()
+    if ( v ) {
+      this._current = v
+      this._current.select()
+      this.buttonsSelect.classList.remove('hidden')
+      // Peut-on passer à l'étape suivante ?
+      var nextEnable = v.indexCurrentStep < v.list.aSteps.length - 1
+      this.panel.querySelector('.btn-next-step').classList[nextEnable?'remove':'add']('hidden')
+      var prevEnable = v.indexCurrentStep > 0
+      this.panel.querySelector('.btn-prev-step').classList[prevEnable?'remove':'add']('hidden')
+      // Il faut rendre le bouton "-" bien visible
+      this.btnMoins.classList.remove('discret')
+      // Il faut afficher les infos
+      this.divInfos.classList.remove('noDisplay')
+      v.show()
+    }
   }
 
   /** ---------------------------------------------------------------------

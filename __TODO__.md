@@ -1,4 +1,4 @@
-* Mettre le focus au titre quand on fait une nouvelle liste
+* Le bouton "-" doit être inefficace quand aucune liste/item n'est sélectionné
 
 * Pouvoir détruire un item de liste
 * Faire une classe step pour les étapes qui soit enregistrée dans la base
