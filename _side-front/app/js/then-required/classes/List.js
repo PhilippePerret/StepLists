@@ -87,18 +87,18 @@ class List {
           return 'firstEcheanceFin'
       }
     })(sortMethod)
-    console.log("Méthode de classement utilisée : `%s` (key valeur : %s)", sortMethod, keyValeurSorting)
+    // console.log("Méthode de classement utilisée : `%s` (key valeur : %s)", sortMethod, keyValeurSorting)
     // L'échéance peut/pourrait être définie par deux choses :
     // 1. une échéance précise définie explicitement pour la liste
     // 2. l'échéance calculée de la dernière étape
     var listsClassed = []
     this.listing.querySelectorAll('li').forEach(li=>listsClassed.push(this.getByLi(li)))
     listsClassed = listsClassed.sort(this[sortMethod].bind(this))
-    console.log("listsClassed = ", listsClassed)
+    // console.log("listsClassed = ", listsClassed)
     // On classe finalement la liste en ajoutant au titre la valeur retenue
     listsClassed.map(list => {
       this.listing.appendChild(list.li)
-      console.log("list[%s] = %s", keyValeurSorting, list[keyValeurSorting])
+      // console.log("list[%s] = %s", keyValeurSorting, list[keyValeurSorting])
       var valeurSorting = keyValeurSorting ? ` <span class="small">(prochaine échéance le ${humanDateFor(list[keyValeurSorting])})</span>` : ''
       list.li.querySelector('.key-sort').innerHTML = `${valeurSorting}`
     })
@@ -124,6 +124,7 @@ class List {
   }
 
   /**
+    Demande d'ajout d'une étape (formulaire de la liste)
     Méthode appelée quand on clique sur le bouton "+" de la liste des
     étapes.
   **/
@@ -202,7 +203,6 @@ class List {
 
     // On checke la validité des données en les relevant
     if (!this.checkDataValidity()) return
-
     // On crée la nouvelle instance avec les données relevées
     var newList = new List(this.provData)
     // On l'enregistre
@@ -211,8 +211,13 @@ class List {
     newList.build()
     // On ferme le formulaire
     this.hideForm()
+    // On ajoute cette liste
+    Object.assign(this.listsById, {[newList.id]: newList})
+    // On la met en liste courante
+    this.current = newList
   }
 
+  // Actualisation de la liste courante
   static updateList(){
     if (!this.checkDataValidity()) return
     this.current.update(this.provData)
@@ -267,7 +272,6 @@ class List {
     }
     this.listsById = lists
   }
-
 
   /**
     Méthode qui checke la validité des données dans le formulaire
@@ -468,11 +472,7 @@ class List {
     if ( this.data.stepsId.length > 254 ) {
       console.error("La longueur de la données étapes est malheureusement trop longue…", this.stepsId)
     }
-    console.log("À la fin de List.saveSteps, this.stepsId = %s (this.data.stepsId %s). Au début : %s", this.stepsId, this.data.stepsId, this.oldStepsId)
-    if ( this.oldStepsId != this.stepsId ) {
-      console.warn("Les données étapes ont changé, il faudrait les checker")
-      // TODO
-    }
+    // console.log("À la fin de List.saveSteps, this.stepsId = %s (this.data.stepsId %s). Au début : %s", this.stepsId, this.data.stepsId, this.oldStepsId)
   }
   stepCreateRequestFor(dStep){
     return ["INSERT INTO steps "
@@ -528,7 +528,19 @@ class List {
     console.log("Destruction de la liste #%d opérée avec succès", this.id)
   }
 
+  /**
+    Exécuter la méthode +method+ sur chaque item de la liste
+    Pour interrompre, il suffit que +method+ retourne `false`
 
+    Note : si la méthode est utilisée alors qu'on n'est pas sûr que
+    les items soient chargés, on utilise la tournure `await liste.forEachItem(...)`
+  **/
+  async forEachItem(method){
+    if ( !this._items ){ await this.load() }
+    for(var item_id in this.items){
+      if (false === method(this.items[item_id]) ) break ;
+    }
+  }
 
   onClick(ev){
     List.current = this
@@ -546,22 +558,21 @@ class List {
   **/
   async edit(){
     List.resetForm()
-    if ( undefined === this._items ){ await this.load() /* + étapes surtout */}
-
-
+    if ( undefined === this._items ){ await this.load() }
     for(var prop of ['id','titre','description']){
       var val = this[prop] || ''
       DGet(`form#list-form #list-${prop}`).value = val
     }
-    // Il faut construire les étapes (il y en a au moins une)
-    this.steps.map(step => step.build())
     // On mémorise la liste initiale des étapes
-    List.form.querySelector('#list-originalStepsList').value = this.stepsId
+    // (pour pouvoir voir si elles ont changé)
+    DGet('#list-originalStepsList').value = this.stepsId
+    // Il faut construire les étapes (il y en a toujours au moins une)
+    this.steps.map(step => step.build())
   }
 
   // Retourne true si la liste des étapes a été modifiée
   get stepsHasChanged(){
-    return this.stepsId != List.form.querySelector('#list-originalStepsList').value
+    return this.stepsId != DGet('#list-originalStepsList').value
   }
 
   /**

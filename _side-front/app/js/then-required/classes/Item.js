@@ -98,6 +98,7 @@ class Item {
 
   static forEachLi(method){
     this.listing.querySelectorAll('li.li-item').forEach(li => {
+      console.log("li, this.getByLi(li)", li, this.getByLi(li))
       method(this.getByLi(li))
     })
   }
@@ -139,7 +140,7 @@ class Item {
 
     // Dans un premier temps, on sépare les items en attente (à ne pas classer)
     // des items lancés
-    this.forEachLi(item=>{
+    this.forEachLi(item => {
       if ( item.indexCurrentStep ) {
         // <= L'item est démarré
         sortableItems.push(item)
@@ -670,6 +671,11 @@ class Item {
       , valeurs = [this.titre, this.list_id, this.description, this.expectedNext, this.action1, this.action2, this.action3, this.created_at]
     // console.log("Je vais enregistrer les données : ", valeurs)
     await MySql2.execute(request, valeurs)
+    // On récupère son identifiant
+    this.data.id = await MySql2.lastInsertId()
+    // Après la création, pour pouvoir en prendre compte tout de suite, il
+    // faut l'ajouter à sa liste
+    Object.assign(this.list._items,{[this.id]: this})
   }
 
   afterUpdate(){
@@ -677,7 +683,12 @@ class Item {
     this.reset()
     this.decomposeTypeAndValueInActions()
     this.updateLi()
-    this.show() // pour actualiser les informations
+    if (this.isCurrentItem) this.show()
+  }
+
+  // Retourne true si l'item affiché (courant) est cet item-ci
+  get isCurrentItem(){
+    return (Item.current && Item.current.id == this.id)
   }
 
   // Méthode qui construit l'item
@@ -790,6 +801,11 @@ class Item {
   setTextCurrentStep(str){
     this.spanCurrentStep.innerHTML = str
   }
+  /*  Actualise le nom de l'étape courante en fonction du mode d'affichage
+      désiré */
+  updateTitreCurrentStep(){
+    this.setTextCurrentStep(this.currentStep.titre)
+  }
   /**
     Règle l'étape courante
     Si +isCurrent+ est true, la marque en étape courante, sinon, la démarque
@@ -798,7 +814,10 @@ class Item {
     this.spanCurrentStep.classList[isCurrent?'add':'remove']('current')
   }
   decurrentizeSpanCurrentStep(){this.setSpanCurrentStep(false)}
-  currentizeSpanCurrentStep(){this.setSpanCurrentStep(true)}
+  currentizeSpanCurrentStep(){
+    this.setSpanCurrentStep(true)
+    this.updateTitreCurrentStep()
+  }
   /**
     Pour faire passer l'item à son étape suivante
     +nombreJours+ est l'échéance attendue
@@ -811,7 +830,9 @@ class Item {
     var today = new Date()
     this.aSteps.push(`${newStepId}:${today.toLocaleDateString('en-US')}`)
     var expectedAt = today.addDays(nombreJours)
-    await this.update({steps:this.aSteps.join(';'), expectedNext:expectedAt})
+    var newSteps = this.aSteps.join(';')
+    await this.update({steps:newSteps, expectedNext:expectedAt})
+    this.steps = newSteps
     this.currentizeSpanCurrentStep()
   }
   /**

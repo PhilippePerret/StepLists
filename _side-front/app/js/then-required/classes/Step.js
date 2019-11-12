@@ -64,14 +64,82 @@ class Step {
   }
 
   /**
+    Appelée lorsque les étapes de la liste ont été modifiées (que la liste
+    contienne déjà des éléments ou non)
     Vérifie si des modifications d'étapes sont à faire dans la liste {List}
     +liste+ et les opère.
     Cf. Manuel-App-Developper.md#on_change_steps_with_items (Changement des
     étapes d'une liste possédant des items)
   **/
-  static checkAndResolveStepsChanges(liste){
-    // On se contente maintenant de gérer les étapes qui n'existent plus
-    // et celles qui sont ajoutées (sauf à la fin)
+  static async checkAndResolveStepsChanges(liste){
+    if ( !liste._items ) await list.load()
+
+    // Répétition pour chaque item de la liste concernée
+    liste.forEachItem( item => {
+      if (item.doneSteps.length) {
+        // <= L'item possède des étapes faites
+        // => Il faut la traiter
+
+        console.log("steps au début de l'item #%d : %s", item.id, item.steps)
+
+        // On commence par faire une table avec en clé l'ID de l'étape et
+        // en valeur une table qui contiendra le nouvel index à donner à
+        // l'étape, et son temps s'il est défini
+        var itemTableSteps = {}
+        item.doneSteps.forEach(step => {
+          Object.assign(itemTableSteps, {[step.stepId]: {id:step.stepId, index:null, date:step.simpleDate, doneStep:step}})
+        })
+
+        // On boucle sur chaque étape de la liste
+        var stepCount = liste.steps.length
+        for(var istep = 0; istep < stepCount; ++istep){
+          var step_id = liste.steps[istep].id
+          if ( undefined === itemTableSteps[step_id] ) {
+            Object.assign(itemTableSteps, {[step_id]: {id:step_id, index:istep, date:null, doneStep:null}})
+          }
+          // On règle toujours l'index
+          itemTableSteps[step_id].index = parseInt(istep,10)
+        }
+
+        // On épure la table pour ne garder que les éléments qui définissent
+        // un index (les autres correspondent à des étapes supprimées)
+        for(var stepid in itemTableSteps){
+          if ( itemTableSteps[stepid].index === null ){
+            delete itemTableSteps[stepid]
+          }
+        }
+
+        // On classe les étapes de l'item par l'index
+        var newSteps = Object.values(itemTableSteps).sort((a,b) => {return a.index > a.index ? 1 : -1})
+        // On recompose la liste final en créant les dates si nécessaire
+        var newStepsStr = []
+        for(var istep = 0, len = newSteps.length; istep < len; ++istep){
+          dstep = newSteps[istep]
+          var date
+          if ( dstep.date ) {
+            date = dstep.date
+          } else {
+            // Il faut trouver une date
+            var nextStep = newSteps[parseInt(istep,10)+1]
+            if ( nextStep ) {
+              date = new Date(nextStep.time - 4 * 3600 * 1000 /* 4 heures avant */)
+              // Ici il pourra y avoir une erreur si une étape dure moins de
+              // 4 heures
+            } else {
+              // Pas d'étape suivante, on met maintenant
+              date = new Date()
+            }
+            date = date.toLocaleDateString('en-US')
+          }
+          newStepsStr.push(`${dstep.id}:${date}`)
+        } // fin de boucle sur chaque étape
+        // On compose la donnée string et on la donne à l'item pour
+        // enregistrement
+        item.steps = newStepsStr.join(';')
+        console.log("steps à la fin de l'item #%d : %s", item.id, item.steps)
+        item.update()
+      } // fin de si l'item a des étapes faites (doneSteps)
+    })
   }
 
   /** ---------------------------------------------------------------------

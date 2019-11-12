@@ -23,6 +23,8 @@ class DoneStep {
   **/
   get titre(){return this.step.titre}
   get date(){return this._date || this.simpleDate}
+  get realDate(){return this._realdate || defP(this,'_realdate',new Date(this.time))}
+  get time(){ return this._time || defP(this,'_time',Date.parse(this.simpleDate))}
   get simpleDate(){return this._simpledate}
   // Instance {List} de la liste à laquelle appartient l'item
   get list(){return this.item.list}
