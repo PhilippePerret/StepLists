@@ -8,7 +8,7 @@
       let maConstante = tryRequire('./insamefolder', __dirname)
 
 **/
-global.tryRequire = function(rpath, folder){
+const tryRequire = function(rpath, folder){
   try {
     isDefined(folder) && ( rpath = [folder,rpath].join(path.sep) )
     return require(rpath)
@@ -158,10 +158,6 @@ window.defP = function(obj, prop, val){
   obj[prop] = val
   return val
 }
-// function defP(obj, prop, val){
-//   obj[prop] = val
-//   return val
-// }
 
 /**
   Remplace la tournure :
@@ -245,7 +241,7 @@ function valOrNull(value, options){
 }
 
 function DGet(DOMId){
-  return document.getElementById(DOMId)
+  return document.querySelector(DOMId)
 }
 
 /**
@@ -395,7 +391,7 @@ function toggleVisible(jqId, v){
 // Pour écouter un objet
 // p.e. listen(btnPlay, 'click', Controller, 'start')
 function listen(cible, ename, objet, method, param){
-  if('string'===typeof(cible)){cible = DGet(cible)}
+  if('string'===typeof(cible)){cible = DGet(`#${cible}`)}
   try {
     if(undefined === param){
       cible.addEventListener(ename, objet[method].bind(objet))

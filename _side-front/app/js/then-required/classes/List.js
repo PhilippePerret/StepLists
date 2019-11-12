@@ -13,16 +13,16 @@ class List {
   /**
     | Éléments de l'interface
   **/
-  static get panel(){return document.querySelector('#lists-panel')}
+  static get panel(){return DGet('#lists-panel')}
   static get divListing(){return this.panel.querySelector('#div-lists')}
   static get listing(){return this.divListing.querySelector('#lists')}
   static get sortTypeMenu(){return this.divListing.querySelector('select.sort-type')}
   static get btnPlus(){return this.panel.querySelector('div#div-lists div.btn-plus')}
   static get btnMoins(){return this.panel.querySelector('div#div-lists div.btn-moins')}
-  static get form(){return document.querySelector('form#list-form')}
+  static get form(){return DGet('form#list-form')}
   static get btnSaveList(){return this.form.querySelector('button#btn-save-list')}
   static get btnCancelList(){return this.form.querySelector('button#btn-cancel-save-list')}
-  static get idField(){return document.querySelector('form#list-form input#list-id')}
+  static get idField(){return DGet('form#list-form input#list-id')}
   static get divSteps(){return this.form.querySelector('#listbox-list-steps')}
   static get stepsList(){return this.divSteps.querySelector('ul#list-steps')}
 
@@ -30,8 +30,8 @@ class List {
     Initialisation du panneau des listes
   **/
   static init(){
-    let btnEdit   = document.querySelector('div#div-lists div.btn-edit')
-      , btnShow   = document.querySelector('div#div-lists div.btn-show')
+    let btnEdit   = DGet('div#div-lists div.btn-edit')
+      , btnShow   = DGet('div#div-lists div.btn-show')
       , divSteps  = this.panel.querySelector('#listbox-list-steps')
       , btnAddStep = divSteps.querySelector('.btn-plus')
       , btnSupStep = divSteps.querySelector('.btn-moins')
@@ -279,7 +279,7 @@ class List {
 
     // On récupère les données du formulaire
     for(var prop of ['id','titre','description']){
-      Object.assign(provData, {[prop]: document.querySelector(`form#list-form #list-${prop}`).value.trim()})
+      Object.assign(provData, {[prop]: DGet(`form#list-form #list-${prop}`).value.trim()})
     }
     // Pour les étapes
     var steps = []
@@ -336,17 +336,17 @@ class List {
     }
     if (!this.current){
       // Par exemple au chargement
-      document.querySelector('div#div-lists .btns-selected').classList.add('hidden')
+      DGet('div#div-lists .btns-selected').classList.add('hidden')
       this.btnMoins.classList.add('discret')
     }
     if ( v ) {
       this._current = v
       // On règle le titre partout où il est utilisé
-      document.querySelector('.list-name').innerHTML = v.titre
+      DGet('.list-name').innerHTML = v.titre
       // On met le lit en exergue
       v.li.classList.add('selected')
       // On affiche les boutons qui permettent de gérer la liste
-      document.querySelector('div#div-lists .btns-selected').classList.remove('hidden')
+      DGet('div#div-lists .btns-selected').classList.remove('hidden')
       this.btnMoins.classList.remove('discret')
       // On charge ses données si c'est nécessaire
       v.load()
@@ -551,7 +551,7 @@ class List {
 
     for(var prop of ['id','titre','description']){
       var val = this[prop] || ''
-      document.querySelector(`form#list-form #list-${prop}`).value = val
+      DGet(`form#list-form #list-${prop}`).value = val
     }
     // Il faut construire les étapes (il y en a au moins une)
     this.steps.map(step => step.build())
@@ -571,7 +571,7 @@ class List {
     UI.showPanel('itemsPanel')
     // On renseigne l'identifiant de liste qui permettra de régler
     // les list_id des nouveaux items ou items édités
-    document.querySelector('#item-list_id').value = this.id
+    DGet('#item-list_id').value = this.id
     // Vider la section des items
     Item.listing.innerHTML = ""
     // Peupler la section des items

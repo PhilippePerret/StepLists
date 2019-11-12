@@ -1,4 +1,4 @@
-* Remplace `document.querySelector` par `DGet`
+* Ajouter au mode d'emploi Framework de regarder toutes les méthodes utiles dans `system/js/utils.js`
 * Menu pour choisir le type d'affichage des étapes courantes : titre ou échéance
 
 * Améliorer l'affichage des données de l'étape courante :

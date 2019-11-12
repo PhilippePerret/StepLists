@@ -223,7 +223,7 @@ observe(){
     return stopEvent(e)
   }
 
-get answerField(){return document.querySelector('.reponse input[type="text"]')}
+get answerField(){return DGet('.reponse input[type="text"]')}
 
 }// /class MessageBox
 

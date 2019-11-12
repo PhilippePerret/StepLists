@@ -21,10 +21,10 @@ class Item {
   static get sortTypeMenu(){return this.divListing.querySelector('.sort-type')}
   static get btnUp(){return this.divListing.querySelector('.btn-up')}
   static get btnDown(){return this.divListing.querySelector('.btn-down')}
-  static get form(){return document.querySelector('form#item-form')}
-  static get btnSaveItem(){return document.querySelector("button#btn-save-item")}
-  static get btnCancelSaveItem(){return document.querySelector("button#btn-cancel-edit-item")}
-  static get idField(){return document.querySelector('form#item-form input#item-id')}
+  static get form(){return DGet('form#item-form')}
+  static get btnSaveItem(){return DGet("button#btn-save-item")}
+  static get btnCancelSaveItem(){return DGet("button#btn-cancel-edit-item")}
+  static get idField(){return DGet('form#item-form input#item-id')}
   static get buttonsSelect(){return UI.itemsPanel.querySelector('div.btns-selected')}
   static get divInfos(){return this.panel.querySelector('#selected-item-infos')}
 
@@ -41,10 +41,10 @@ class Item {
     for(var i of [1,2,3]){
       var racineId = `item-action${i}`
       var selectId = `#${racineId}-type`
-      var selectObj = document.querySelector(selectId)
+      var selectObj = DGet(selectId)
       selectObj.addEventListener('change', this.onChooseTypeAction.bind(this,i))
       var btnChooseId = `#btn-choose-file-action${i}`
-      let btnChoose   = document.querySelector(btnChooseId)
+      let btnChoose   = DGet(btnChooseId)
       btnChoose.addEventListener('click',this.chooseActionFile.bind(this,i))
     }
 
@@ -73,7 +73,7 @@ class Item {
     this.divInfos.querySelector('#btn-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
 
     // Tous les boutons permettant de sauver la liste
-    document.querySelectorAll('.btn-save-list').forEach(btn => {
+    DGetAll('.btn-save-list').forEach(btn => {
       btn.addEventListener('click',this.updateCurrentList.bind(this))
     })
     // Pour forcer l'affichage à bien se régler
@@ -409,16 +409,16 @@ class Item {
     var prop
     for(prop of ['id','titre','description']){
       // Surtout pas list_id !
-      document.querySelector(`#item-${prop}`).value = ''
+      DGet(`#item-${prop}`).value = ''
     }
     for(var i of [1,2,3]){
       prop = `action${i}`
-      document.querySelector(`#item-${prop}`).value = ''
-      document.querySelector(`#item-${prop}-type`).selectedIndex = 0
-      var obj = document.querySelector(`#btn-choose-file-${prop}`)
+      DGet(`#item-${prop}`).value = ''
+      DGet(`#item-${prop}-type`).selectedIndex = 0
+      var obj = DGet(`#btn-choose-file-${prop}`)
       obj.innerHTML = 'Choisir…'
       obj.classList.add('noDisplay')
-      obj = document.querySelector(`#item-${prop}`)
+      obj = DGet(`#item-${prop}`)
       obj.innerHTML = 'Choisir…'
       obj.classList.add('noDisplay')
     }
@@ -429,7 +429,7 @@ class Item {
   **/
   static onChooseTypeAction(actionId, ev){
     // console.log("actionId = ", actionId)
-    let selectObj = document.querySelector(`select#item-action${actionId}-type`)
+    let selectObj = DGet(`select#item-action${actionId}-type`)
     // En fonction du choix, on affiche le bouton "choisir…" ou le champ de
     // texte.
     var btnChoose,valField
@@ -441,8 +441,8 @@ class Item {
       default:
         [btnChoose,valField] = [false,true]
     }
-    let btnC = document.querySelector(`#btn-choose-file-action${actionId}`)
-    let btnF = document.querySelector(`#item-action${actionId}`)
+    let btnC = DGet(`#btn-choose-file-action${actionId}`)
+    let btnF = DGet(`#item-action${actionId}`)
     btnC.classList[btnChoose?'remove':'add']('noDisplay')
     btnF.classList[valField?'remove':'add']('noDisplay')
     // Dans tous le cas on initialise la valeur du champ de texte, qui peut
@@ -455,7 +455,7 @@ class Item {
     fichier ou le dossier associé à un bouton d'action de l'item édité
   **/
   static chooseActionFile(actionId, ev){
-    let selectObj = document.querySelector(`select#item-action${actionId}-type`)
+    let selectObj = DGet(`select#item-action${actionId}-type`)
     var choix
     switch(selectObj.value){
       case 'file':
@@ -467,9 +467,9 @@ class Item {
       default:
         console.error("Impossible de traiter le choix %s…", selectObj.value)
     }
-    document.querySelector(`#item-action${actionId}`).value = choix || ''
+    DGet(`#item-action${actionId}`).value = choix || ''
     if (choix) {
-      let btnChoose = document.querySelector(`#btn-choose-file-action${actionId}`)
+      let btnChoose = DGet(`#btn-choose-file-action${actionId}`)
       btnChoose.innerHTML = `Choisir "${path.basename(choix)}"`
     }
   }
@@ -568,7 +568,7 @@ class Item {
   static getFormValues(){
     var fData = {}
     for(var prop of ['id', 'titre','list_id','description','action1','action2','action3']){
-      fData[prop] = document.querySelector(`#item-${prop}`).value
+      fData[prop] = DGet(`#item-${prop}`).value
     }
     // Quelques ajustements
     if ( fData.id != '' ){ // <= édition
@@ -581,7 +581,7 @@ class Item {
     // Il faut ajouter le type aux actions si elles sont définies
     for(var iAction of [1,2,3]){
       var prop = `action${iAction}`
-        , type = document.querySelector(`select#item-${prop}-type`).value
+        , type = DGet(`select#item-${prop}-type`).value
       if ( fData[prop] == "" || type == 'none') {
         fData[prop] = null
       } else {
@@ -657,7 +657,7 @@ class Item {
       })(actif, this[`${prop}Type`], this[`${prop}Value`])
     }
     // Visibilité du texte d'aide
-    document.querySelector('.no-action').classList[aucuneAction?'remove':'add']('noDisplay')
+    DGet('.no-action').classList[aucuneAction?'remove':'add']('noDisplay')
 
   }
 
@@ -732,7 +732,7 @@ class Item {
     Item.showForm()
     Item.resetForm()
     for(var prop of ['id','titre','description']){
-      document.querySelector(`form#item-form #item-${prop}`).value = this[prop]
+      DGet(`form#item-form #item-${prop}`).value = this[prop]
     }
     // Les actions
     for(var iAction of [1,2,3]){
@@ -742,8 +742,8 @@ class Item {
         // => Il faut la régler
         var typeA = this[`${prop}Type`]
         var valueA = this[`${prop}Value`]
-        var btnChoose = document.querySelector(`#btn-choose-file-${prop}`)
-        var codeField = document.querySelector(`#item-${prop}`)
+        var btnChoose = DGet(`#btn-choose-file-${prop}`)
+        var codeField = DGet(`#item-${prop}`)
         // 1. Régler son type dans le menu
         Item.form.querySelector(`#item-${prop}-type`).value = typeA
         // 2. Afficher le champ d'édition voulu

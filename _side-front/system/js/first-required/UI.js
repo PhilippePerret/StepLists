@@ -73,7 +73,7 @@ const UI = {
 
 }
 Object.defineProperties(UI,{
-  body:{get(){return document.querySelector('body')}}
-, header:{get(){return document.querySelector('section#header')}}
-, footer:{get(){return document.querySelector('section#footer')}}
+  body:{get(){return DGet('body')}}
+, header:{get(){return DGet('section#header')}}
+, footer:{get(){return DGet('section#footer')}}
 })

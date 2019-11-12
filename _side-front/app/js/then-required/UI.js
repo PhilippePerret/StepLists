@@ -23,8 +23,8 @@ Object.defineProperties(UI,{
         get(){return this._currentPanel || this.mainPanel}
       , set(v){this._currentPanel = v}
     }
-  , mainPanel:{get(){return document.querySelector('div#main-panel')}}
-  , listsPanel:{get(){return document.querySelector('div#lists-panel')}}
-  , itemsPanel:{get(){return document.querySelector('div#items-panel')}}
-  , prefsPanel:{get(){return document.querySelector('div#preferences-panel')}}
+  , mainPanel:{get(){return DGet('div#main-panel')}}
+  , listsPanel:{get(){return DGet('div#lists-panel')}}
+  , itemsPanel:{get(){return DGet('div#items-panel')}}
+  , prefsPanel:{get(){return DGet('div#preferences-panel')}}
 })
