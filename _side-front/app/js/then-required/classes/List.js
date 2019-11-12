@@ -164,9 +164,15 @@ class List {
   /**
     Méthode appelée par le bouton pour afficher les items de la liste
     courante
+    Appelée aussi au double-clic sur la liste
   **/
   static showSelectedList(ev){
-    this.current.showItems()
+    // On affiche le panneau des items
+    UI.showPanel('itemsPanel')
+    // On renseigne l'identifiant de liste qui permettra de régler
+    // les list_id des nouveaux items ou items édités
+    DGet('#item-list_id').value = this.id
+    this.current.buildItems()
     return stopEvent(ev)
   }
   /**
@@ -412,8 +418,8 @@ class List {
     // S'il y a des items dans cette liste et que les étapes ont été
     // modifiées, il faut checker ce qu'il y a à faire
     if (this.stepsHasChanged) {
-      console.log("La liste des étapes a été modifiée, je dois checker les items.")
       Step.checkAndResolveStepsChanges(this)
+      this.buildItems() // pour actualiser les items
     } else {
       if (this.items && this.items.length) {
         console.log("Aucun item dans cette liste, les étapes peuvent être modifiées sans souci.")
@@ -551,8 +557,7 @@ class List {
   }
   onDblClick(ev){
     List.current = this
-    this.showItems()
-    return stopEvent(ev)
+    return List.showSelectedList(ev)
   }
 
   /**
@@ -581,11 +586,7 @@ class List {
   /**
     Méthode qui affiche les items de la liste
   **/
-  async showItems(){
-    UI.showPanel('itemsPanel')
-    // On renseigne l'identifiant de liste qui permettra de régler
-    // les list_id des nouveaux items ou items édités
-    DGet('#item-list_id').value = this.id
+  async buildItems(){
     // Vider la section des items
     Item.listing.innerHTML = ""
     // Peupler la section des items
