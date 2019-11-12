@@ -18,6 +18,7 @@ class Item {
   static get btnMoins(){return this.panel.querySelector('.btn-moins')}
   static get divListing(){return this.panel.querySelector('#div-list-items')}
   static get listing(){return this.divListing.querySelector('ul#item-list')}
+  static get displayTypeMenu(){return this.panel.querySelector('.display-type')}
   static get sortTypeMenu(){return this.divListing.querySelector('.sort-type')}
   static get btnUp(){return this.divListing.querySelector('.btn-up')}
   static get btnDown(){return this.divListing.querySelector('.btn-down')}
@@ -81,7 +82,8 @@ class Item {
 
     // Pour observer le menu du type de classement
     this.sortTypeMenu.addEventListener('change',this.defineSortingType.bind(this))
-
+    // Pour observer le menu du type d'affichage
+    this.displayTypeMenu.addEventListener('change',this.onChangeDisplayType.bind(this))
   }// /init
 
   static getById(item_id){
@@ -94,6 +96,19 @@ class Item {
     return this.getById(li.getAttribute('data-id'))
   }
 
+  static forEachLi(method){
+    this.listing.querySelectorAll('li.li-item').forEach(li => {
+      method(this.getByLi(li))
+    })
+  }
+
+  /**
+    Appelée quand on change de mode d'affichage des étapes
+  **/
+  static onChangeDisplayType(){
+    const dispProp = this.displayTypeMenu.value
+    this.forEachLi(item => item.setTextCurrentStep(item[dispProp]))
+  }
 
   /**
     Règle l'ordre d'affichage en fonction du type d'affichage voulu
@@ -105,14 +120,13 @@ class Item {
         case 'alphabSorting':
         case 'alphabInvSorting':
         case 'customSorting':
-          return 'item.currentStep.titre'
+          return 'item.titreCurrentStep'
         case 'echeanceSorting':
           return 'item.human_echeance'
         case 'echeanceFinSorting':
           return 'item.human_echeanceFin'
       }
     })(method)
-
     if ( method == 'customSorting' ){
       this.customSort()
     } else {
@@ -137,14 +151,10 @@ class Item {
 
     var unsortableItems = []
       , sortableItems = []
-    // La liste courante
-    let list = List.current
 
     // Dans un premier temps, on sépare les items en attente (à ne pas classer)
     // des items lancés
-    var sortableItems = []
-    this.listing.querySelectorAll('li').forEach( li => {
-      var item = this.getByLi(li)
+    this.forEachLi(item=>{
       if ( item.indexCurrentStep ) {
         // <= L'item est démarré
         sortableItems.push(item)
@@ -160,20 +170,20 @@ class Item {
     // On affiche la liste (note : on change le mode d'affichage de l'item pour
     // qu'ils affichent leur échéance plutôt que leur nom)
     this.listing.innerHTML = ''
-    sortableItems.map(item => {
-      this.listing.appendChild(item.li)
-      item.setTextCurrentStep(eval(params.dynValue))
-      // console.log("item[%s] = %s", keyValeur, item[keyValeur])
-      // var valeurSorting = keyValeurSorting ? ` <span class="small">(prochaine échéance le ${humanDateFor(item[keyValeur])})</span>` : ''
-      // list.li.querySelector('.key-sort').innerHTML = `${valeurSorting}`
-    })
+    sortableItems.map( item => { this.listing.appendChild(item.li) } )
 
     if ( unsortableItems.length ) {
-      // On ajoute un séparateur entre les classables et les non démarrés
+      // Ajout d'un délimiteur
       this.listing.appendChild(DCreate('DIV',{style:'border:2px solid #b1b1fb;'}))
-      // On ajoute à la fin les items non démarrés
+      // Ajout à la fin les items non démarrés
       unsortableItems.map(item => this.listing.appendChild(item.li))
     }
+
+    // On change le mode d'affichage pour voir l'échéance plutôt que le nom
+    // de l'étape courante
+    this.displayTypeMenu.value = 'human_echeance'
+    this.onChangeDisplayType()
+
   }
 
   /**
@@ -894,6 +904,9 @@ class Item {
   // Retourne l'instance {Step} de l'étape courante de l'item
   get currentStep(){
     return this._currentstep || defP(this,'_currentstep',this.list.steps[this.indexCurrentStep])
+  }
+  get titreCurrentStep(){
+    return this.currentStep.titre
   }
   get indexCurrentStep(){
     return this.aSteps.length

@@ -1,5 +1,5 @@
-* Ajouter au mode d'emploi Framework de regarder toutes les méthodes utiles dans `system/js/utils.js`
-* Menu pour choisir le type d'affichage des étapes courantes : titre ou échéance
+* Utiliser les propriétés plutôt que l'eval, pour le classement
+* Le calcul de l'échéance de fin est mauvais
 
 * Améliorer l'affichage des données de l'étape courante :
   - lorsqu'elle n'est pas démarrée : marquer seulement "En attente de démarrage" (supprimer le label)
