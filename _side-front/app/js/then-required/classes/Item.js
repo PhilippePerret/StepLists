@@ -166,7 +166,13 @@ class Item {
 
     // On change le mode d'affichage pour voir l'échéance plutôt que le nom
     // de l'étape courante
-    this.displayTypeMenu.value = 'human_echeance'
+    this.displayTypeMenu.value = ( (method) => {
+      switch(method){
+        case 'echeanceFinSorting':  return 'human_echeanceFin'
+        case 'echeanceSorting':     return 'human_echeance'
+        default:                    return 'titreCurrentStep'
+      }
+    })(params.sortMethod)
     this.onChangeDisplayType()
 
   }

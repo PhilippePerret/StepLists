@@ -1,5 +1,3 @@
-* Le calcul de l'échéance de fin est mauvais
-
 * Améliorer l'affichage des données de l'étape courante :
   - lorsqu'elle n'est pas démarrée : marquer seulement "En attente de démarrage" (supprimer le label)
   - ajouter la fin calculée de l'item
