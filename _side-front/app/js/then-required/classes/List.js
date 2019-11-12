@@ -136,8 +136,11 @@ class List {
     // On focus dans le premier champ (titre)
     li.querySelector('input[type="text"]').focus()
   }
-  static removeStep(){
-    console.log("Je vais supprimer l'étape séelectionnée")
+  static async removeStep(){
+    if ( await confirmer(locale('confirm-destroy-step',{titre:Step.current.titre})) ){
+      await Step.current.destroy()
+      // TODO Resetter la liste
+    }
   }
 
 
@@ -442,7 +445,7 @@ class List {
     console.log("-> saveSteps")
     // console.log("stepsData = ", stepsData)
     // On conserve la liste courante pour voir s'il y a changement
-    if ( this.stepsId) {
+    if ( this.stepsId ) {
       // console.log("this.stepsId au début de saveSteps:", this.stepsId.split(','))
       this.oldStepsId = this.stepsId.split(',').join(',')
     }

@@ -1,4 +1,5 @@
-* Traiter le problème des ajouts/suppressions d'étapes
+* Reconstruire le listing des items après un changement d'étapes (quelles que soient les données des itemps)
+
 
 * Améliorer l'affichage des données de l'étape courante :
   - lorsqu'elle n'est pas démarrée : marquer seulement "En attente de démarrage" (supprimer le label)

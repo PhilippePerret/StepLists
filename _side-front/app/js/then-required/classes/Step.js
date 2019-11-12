@@ -114,15 +114,18 @@ class Step {
         // On recompose la liste final en créant les dates si nécessaire
         var newStepsStr = []
         for(var istep = 0, len = newSteps.length; istep < len; ++istep){
-          dstep = newSteps[istep]
+          var dstep = newSteps[istep]
           var date
           if ( dstep.date ) {
             date = dstep.date
           } else {
             // Il faut trouver une date
             var nextStep = newSteps[parseInt(istep,10)+1]
-            if ( nextStep ) {
-              date = new Date(nextStep.time - 4 * 3600 * 1000 /* 4 heures avant */)
+            if ( nextStep && nextStep.doneStep ) {
+              var newTime = nextStep.doneStep.time - 4 * 3600 * 1000 /* 4 heures avant */
+              date = new Date(newTime)
+              // console.log("---- nextStep: ", nextStep)
+              // console.log("nextStep.time: %d, => newTime = %d, date = ", nextStep.doneStep.time, newTime, date)
               // Ici il pourra y avoir une erreur si une étape dure moins de
               // 4 heures
             } else {
@@ -166,6 +169,15 @@ class Step {
     })
   }
 
+  async destroy(){
+    const my = this
+    this.li.remove()
+    var request = `DELETE FROM steps WHERE id = ${this.id}`
+    var res = await MySql2.execute(request)
+    List.updateList()
+    List.showForm() // a été masqué par List.updateList()
+  }
+
   onFocus(span, ev){
     Step.current = this
     span.select()
@@ -183,11 +195,7 @@ class Step {
   *** --------------------------------------------------------------------- */
 
   // Retourne l'instance {List} de la liste à laquelle appartient l'étape
-  get list(){
-    if (undefined === this._list){
-      this._list = List.getById(this.list_id)
-    } return this._list
-  }
+  get list(){return this._list || defP(this,'_list',List.getById(this.list_id))}
 
   // Retourne l'objet DOM LI de l'étape
   get li(){
