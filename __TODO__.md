@@ -1,4 +1,3 @@
-* Utiliser les propriétés plutôt que l'eval, pour le classement
 * Le calcul de l'échéance de fin est mauvais
 
 * Améliorer l'affichage des données de l'étape courante :

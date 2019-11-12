@@ -990,7 +990,7 @@ class Item {
       // jours pour les étapes restantes
       eche = this.expectedNext /* une {Date} */
       echeFin = this.expectedNext
-      var stepCount = this.list.steps.count
+      var stepCount = this.list.steps.length
       for(var istep = this.indexCurrentStep+1; istep < stepCount; ++istep){
         echeFin = echeFin.addDays(this.list.steps[istep].nombreJours)
       }
