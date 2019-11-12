@@ -28,6 +28,7 @@ class Item {
   static get idField(){return DGet('form#item-form input#item-id')}
   static get buttonsSelect(){return UI.itemsPanel.querySelector('div.btns-selected')}
   static get divInfos(){return this.panel.querySelector('#selected-item-infos')}
+  static get btnsUpdateList(){return DGetAll('.btn-save-list')}
 
   /**
     Initialisation du panneau des items
@@ -74,7 +75,7 @@ class Item {
     this.divInfos.querySelector('#btn-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
 
     // Tous les boutons permettant de sauver la liste
-    DGetAll('.btn-save-list').forEach(btn => {
+    this.btnsUpdateList.forEach(btn => {
       btn.addEventListener('click',this.updateCurrentList.bind(this))
     })
     // Pour forcer l'affichage à bien se régler
@@ -267,8 +268,9 @@ class Item {
     classer les items (c'est sa seule fonction pour le moment, mais
     on pourrait imaginer qu'il y en ait d'autres).
   **/
-  static updateCurrentList(){
-    this.current.list.saveChanges()
+  static async updateCurrentList(){
+    await this.current.list.saveChanges()
+    this.btnsUpdateList.forEach(btn => btn.classList.add('hidden'))
   }
 
   /**

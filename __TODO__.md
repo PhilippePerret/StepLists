@@ -1,4 +1,4 @@
-
+* Quand on a actualisé la liste avec le bouton "Actualiser la liste" du panneau des items, il faut remasquer le bouton
 
 * Améliorer l'affichage des données de l'étape courante :
   - lorsqu'elle n'est pas démarrée : marquer seulement "En attente de démarrage" (supprimer le label)
