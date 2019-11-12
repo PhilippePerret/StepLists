@@ -576,13 +576,17 @@ class List {
     Item.listing.innerHTML = ""
     // Peupler la section des items
     if ( undefined === this._items ){ await this.load() }
-    var liste
+    var liste, menuItemSorting
     if ( this.sorted_items ) {
       liste = this.sortedItems
+      menuItemSorting = 'customSorting'
     } else {
       liste = Object.values(this.items)
+      menuItemSorting = 'alphabSorting'
     }
     liste.map(item => item.build())
+    // On doit régler le menu de classement
+    Item.sortTypeMenu.value = menuItemSorting
   }
 
   async removeItem(item){
@@ -617,7 +621,7 @@ class List {
   }
 
   // Retourne la liste des {Item}s classés (attention, ne pas confondre avec la
-  // propriété `sorted_items` qui est enregistrée)
+  // propriété `sorted_items` ({String}) qui est enregistrée)
   get sortedItems(){return this._sorteditems || defP(this,'_sorteditems',this.sortItems())}
   sortItems(){
     return this.sorted_items.split(';').map(item_id => this.itemsById[item_id])

@@ -9,7 +9,6 @@ function humanDateFor(date){
   if ( ! date ) return ''
   const hd = date instanceof Date ? date : new Date(date)
   var jour = hd.getDate()
-  console.log("--- mois : ", hd.getMonth())
   var mois = MOIS[hd.getMonth()].long
   var anne = hd.getFullYear()
   return `${jour} ${mois} ${anne}`

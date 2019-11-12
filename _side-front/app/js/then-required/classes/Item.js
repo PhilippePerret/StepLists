@@ -80,7 +80,7 @@ class Item {
     this.current = null
 
     // Pour observer le menu du type de classement
-    this.sortTypeMenu.addEventListener('change',this.onChangeSortingType.bind(this))
+    this.sortTypeMenu.addEventListener('change',this.defineSortingType.bind(this))
 
   }// /init
 
@@ -98,42 +98,98 @@ class Item {
   /**
     Règle l'ordre d'affichage en fonction du type d'affichage voulu
   **/
-  static onChangeSortingType(){
+  static defineSortingType(){
     var method = this.sortTypeMenu.value
-    var keyValeur = ((meth)=>{
+    var dynValue = ( meth => {
       switch(meth){
         case 'alphabSorting':
         case 'alphabInvSorting':
         case 'customSorting':
-          return null
-        case 'echeanceSorting': return 'echeance'
-        case 'echeanceFinSorting': return ''
+          return 'item.currentStep.titre'
+        case 'echeanceSorting':
+          return 'item.human_echeance'
+        case 'echeanceFinSorting':
+          return 'item.human_echeanceFin'
       }
     })(method)
-    console.log("méthode de classement : `%s`, clé de valeur : `%s`", method, keyValeur)
 
-    var listsClassed = []
-    this.listing.querySelectorAll('li').forEach(li=>listsClassed.push(this.getByLi(li)))
     if ( method == 'customSorting' ){
-      // <= Le classement défini par l'utilisateur
-      // => Il suffit d'afficher les items dans l'ordre
-      if (List.current.sorted_items){
-        List.current.sorted_items.split(';').forEach( item_id => {
-          this.listing.appendChild(this.getById(item_id).li)
-        })
-      } else {
-        alert("Pas de classement propre défini. Pour l'obtenir, déplacer les items à l'aide des flèches puis enregistrer la liste.")
-      }
+      this.customSort()
     } else {
-      listsClassed = listsClassed.sort(this[method].bind(this))
-      console.log("listsClassed = ", listsClassed)
-      // On classe finalement la liste en ajoutant au titre la valeur retenue
-      listsClassed.map(item => {
+      this.sortBy({sortMethod:method, dynValue:dynValue})
+    }
+  }
+
+  /**
+    Classe la liste des items
+
+    @param params {Object} Table de classement :
+      @param params.sortMethod    La méthode de classement à utiliser (cf. plus bas)
+      @param params.dynValue      La valeur dynamique pour afficher le nom
+                                  TODO Doit devenir obsolète lorsqu'un menu permettra de définir cette valeur
+  **/
+  static sortBy(params){
+    if(undefined === params){
+      // <= +params+ n'est pas défini
+      // => Il faut le définir d'après le menu avant de repasser par ici
+      return this.defineSortingType()
+    }
+
+    var unsortableItems = []
+      , sortableItems = []
+    // La liste courante
+    let list = List.current
+
+    // Dans un premier temps, on sépare les items en attente (à ne pas classer)
+    // des items lancés
+    var sortableItems = []
+    this.listing.querySelectorAll('li').forEach( li => {
+      var item = this.getByLi(li)
+      if ( item.indexCurrentStep ) {
+        // <= L'item est démarré
+        sortableItems.push(item)
+      } else {
+        unsortableItems.push(item)
+      }
+    })
+
+    // On classe les items démarrés
+    sortableItems = sortableItems.sort(this[params.sortMethod].bind(this))
+    // console.log("sortableItems = ", sortableItems)
+
+    // On affiche la liste (note : on change le mode d'affichage de l'item pour
+    // qu'ils affichent leur échéance plutôt que leur nom)
+    this.listing.innerHTML = ''
+    sortableItems.map(item => {
+      this.listing.appendChild(item.li)
+      item.setTextCurrentStep(eval(params.dynValue))
+      // console.log("item[%s] = %s", keyValeur, item[keyValeur])
+      // var valeurSorting = keyValeurSorting ? ` <span class="small">(prochaine échéance le ${humanDateFor(item[keyValeur])})</span>` : ''
+      // list.li.querySelector('.key-sort').innerHTML = `${valeurSorting}`
+    })
+
+    if ( unsortableItems.length ) {
+      // On ajoute un séparateur entre les classables et les non démarrés
+      this.listing.appendChild(DCreate('DIV',{style:'border:2px solid #b1b1fb;'}))
+      // On ajoute à la fin les items non démarrés
+      unsortableItems.map(item => this.listing.appendChild(item.li))
+    }
+  }
+
+  /**
+    Classe les items en fonction de la liste défini
+  **/
+  static customSort(){
+    // <= Le classement défini par l'utilisateur
+    // => Il suffit d'afficher les items dans l'ordre
+    if (List.current.sorted_items){
+      List.current.sortedItems.forEach( item => {
         this.listing.appendChild(item.li)
-        // console.log("item[%s] = %s", keyValeur, item[keyValeur])
-        // var valeurSorting = keyValeurSorting ? ` <span class="small">(prochaine échéance le ${humanDateFor(item[keyValeur])})</span>` : ''
-        // list.li.querySelector('.key-sort').innerHTML = `${valeurSorting}`
+        item.setTextCurrentStep(item.currentStep.titre)
       })
+    } else {
+      alert("Pas de classement propre défini. Pour l'obtenir, déplacer les items à l'aide des flèches puis enregistrer la liste.")
+      // TODO On remet le menu type de classement à la première valeur
     }
   }
 
@@ -243,38 +299,60 @@ class Item {
     return stopEvent(ev)
   }
 
+  static askForDureeJours(params){
+    var defautJours = List.current.steps[params.step].nombreJoursDefaut
+    defautJours || (defautJours = 10)
+    Object.assign(params,{
+      message: "En combien de jours doit être exécutée l'étape ?"
+    , defaultAnswer: params.default || defautJours
+    , buttons: ['Renoncer','OK']
+    , methodOnOK: params.onOK
+    , methodOnCancel: function(){}
+    })
+    // Je dois demander quand elle doit être prête
+    var mb = new MessageBox(params)
+    mb.show()
+  }
+
   /**
     Faire passer l'item courant à l'étape suivante
   **/
   static SelectedToNextStep(ev){
     const my = this
-    // On prend le nombre de jour par défaut défini pour la liste
-    // s'il existe, sinon 10
-    var defautJours = List.current.iSteps[this.current.indexCurrentStep+1].nombreJoursDefaut
-    defautJours || (defautJours = 10)
-    // Je dois demander quand elle doit être prête
-    var mb = new MessageBox({
-        message: "Doit se terminer dans combien de jours ?"
-      , defaultAnswer: defautJours
-      , buttons: ['Renoncer','OK']
-      , methodOnOK: my.execPushNextStep.bind(my)
-      , methodOnCancel: function(){}
-
+    this.askForDureeJours({
+        onOK: my.execPushNextStep.bind(my)
+      , step: this.current.indexCurrentStep+1
     })
-    mb.show()
     return stopEvent(ev)
   }
   static execPushNextStep(nombreJours, choix){
     if ( choix != 1 ) return // annulation
     this.current.goToNextStep(parseInt(nombreJours,10))
+    // Il faut reclasser les listes
+    this.sortBy()
   }
+
   /**
     Faire revenir l'item courant à l'étape précédente
   **/
-  static SelectedToPrevStep(ev){
-    alert("Pour le moment, on ne peut pas revenir en arrière.")
+  static async SelectedToPrevStep(ev){
+    if ( await confirmer(locale('confirm-item-to-prev-step', {previous: "précédente"}))) {
+      const my = this
+      this.askForDureeJours({
+          onOK: my.execGotToPrevStep.bind(my)
+        , step: this.current.indexCurrentStep-1
+      })
+      return stopEvent(ev)
+    }
     return stopEvent(ev)
   }
+  // Pour suivre
+  static execGotToPrevStep(nombreJours, choix){
+    if ( choix != 1 ) return // annulation
+    this.current.goToPrevStep(parseInt(nombreJours,10))
+    this.sortBy()
+  }
+
   /**
     Sélectionner l'item +item+
     Fonctionne dans les deux "sens" : peut être appelé directement avec un
@@ -527,6 +605,16 @@ class Item {
     this.decomposeTypeAndValueInActions()
   }
 
+  // Pour forcer le recalcul de toutes les valeurs (par exemple après un update)
+  reset(){
+    for(var prop in ['asteps','currentstep','echeance','echeancefin','donesteps','li']){
+      delete this[`_${prop}`]
+    }
+    delete this.list._firstEcheance
+    delete this.list._firstEcheanceFin
+    this.decomposeTypeAndValueInActions()
+  }
+
   /**
     Méthode d'affichage de l'item (quand il est sélectionné)
   **/
@@ -585,11 +673,7 @@ class Item {
 
   afterUpdate(){
     this.updated_at = new Date() // provisoirement
-    delete this._asteps
-    delete this._currentstep
-    delete this._echeance
-    delete this.list._firstEcheance
-    delete this.list._firstEcheanceFin
+    this.reset()
     this.decomposeTypeAndValueInActions()
     this.updateLi()
     this.show() // pour actualiser les informations
@@ -699,25 +783,65 @@ class Item {
     this.observe()
   }
 
+  get spanCurrentStep(){
+    return this.li.querySelectorAll('span')[this.indexCurrentStep+1]
+  }
+  setTextCurrentStep(str){
+    this.spanCurrentStep.innerHTML = str
+  }
+  /**
+    Règle l'étape courante
+    Si +isCurrent+ est true, la marque en étape courante, sinon, la démarque
+  **/
+  setSpanCurrentStep(isCurrent){
+    this.spanCurrentStep.classList[isCurrent?'add':'remove']('current')
+  }
+  decurrentizeSpanCurrentStep(){this.setSpanCurrentStep(false)}
+  currentizeSpanCurrentStep(){this.setSpanCurrentStep(true)}
   /**
     Pour faire passer l'item à son étape suivante
     +nombreJours+ est l'échéance attendue
   **/
   async goToNextStep(nombreJours){
-    var spans = this.li.querySelectorAll('span')
-    spans[this.indexCurrentStep+1].classList.remove('current')
+    this.decurrentizeSpanCurrentStep()
     // Identifiant de l'étape courante
     var newStepId = this.list.steps[this.indexCurrentStep].id
-    console.log("newStepId = ", newStepId)
+    // console.log("newStepId = ", newStepId)
     var today = new Date()
     this.aSteps.push(`${newStepId}:${today.toLocaleDateString('en-US')}`)
     var expectedAt = today.addDays(nombreJours)
     await this.update({steps:this.aSteps.join(';'), expectedNext:expectedAt})
-    delete this._asteps
-    spans[this.indexCurrentStep+1].classList.add('current')
+    this.currentizeSpanCurrentStep()
   }
-  goToPrevStep(){
-    alert("Pour le moment, on ne peut pas reculer. Plus tard, on pourra imaginer le faire pour revoir les informations temporelles.")
+  /**
+    Note :  comme pour la méthode précédente, il est inutile de décrémenter
+            indexCurrentStep puisque cette valeur est calculée en fonction
+            de la liste des étapes définies
+  **/
+  async goToPrevStep(nombreJours){
+    this.decurrentizeSpanCurrentStep()
+    // Identifiant de l'étape courante
+    var newStepId = this.list.steps[this.indexCurrentStep].id
+
+    var expectedAt = null
+
+    // On retire les deux dernières étape (l'avant-dernière sera remise,
+    // mais avec une autre date de fin attendue)
+    this.aSteps.pop()
+    if ( this.aSteps.length == 0) {
+      // <= l'étape courante était la première
+      // => Il ne faut rien faire de plus
+    } else {
+      this.aSteps.pop()
+      var today = new Date()
+      this.aSteps.push(`${newStepId}:${today.toLocaleDateString('en-US')}`)
+      expectedAt = today.addDays(nombreJours)
+    }
+    // On actualise
+    await this.update({steps:this.aSteps.join(';'), expectedNext:expectedAt})
+    // console.log("Après la transformation, steps de l'item = ", this.steps)
+    // On update l'affichage pour qu'il prenne en compte les changements
+    this.currentizeSpanCurrentStep()
   }
   /**
     |
@@ -780,6 +904,10 @@ class Item {
     return this._asteps || defP(this,'_asteps', this.defineaSteps())
   }
 
+  // Retourne true si l'item est en attente démarrage
+  get isEnAttente(){
+    this.indexCurrentStep == 0
+  }
   /**
     Retourne l'échéance (virtuelle) de l'item courant
     Cette échéance est calculée en fonction
@@ -788,9 +916,12 @@ class Item {
   get echeance(){
     return this._echeance || defP(this,'_echeance',this.defineEcheance().echeance)
   }
+  get human_echeance(){return humanDateFor(this.echeance)}
+
   get echeanceFin(){
-    return this._echeanceFin || defP(this,'_echeanceFin',this.defineEcheance().echeanceFin)
+    return this._echeancefin || defP(this,'_echeancefin',this.defineEcheance().echeanceFin)
   }
+  get human_echeanceFin(){return humanDateFor(this.echeanceFin)}
 
 
   get action1Value(){return this._a1value}
@@ -866,9 +997,9 @@ class Item {
         echeFin = echeFin.addDays(this.list.steps[istep].nombreJours)
       }
     }
-    console.log("Item «%s»\nProchaine échéance : %s\nÉchéance fin : %s", this.titre, eche, echeFin)
+    // console.log("Item «%s»\nProchaine échéance : %s\nÉchéance fin : %s", this.titre, eche, echeFin)
     this._echeance = eche
-    this._echeanceFin = echeFin
+    this._echeancefin = echeFin
     return {
       echeance:eche, echeanceFin:echeFin
     }

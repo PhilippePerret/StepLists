@@ -29,7 +29,7 @@ global.MainBuild = {
 
 , buildJSTags(){
     this.JSTags = []
-    for ( var relative of ['first-required', 'then-required'] ){
+    for ( var relative of ['locale/fr','first-required', 'then-required'] ){
       this.buildJSTagsOfFolder(this.pathOf(`_side-front/system/js/${relative}`))
       this.buildJSTagsOfFolder(this.pathOf(`_side-front/app/js/${relative}`))
     }

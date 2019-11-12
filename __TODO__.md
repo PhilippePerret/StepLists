@@ -1,10 +1,11 @@
+* Remplace `document.querySelector` par `DGet`
+* Menu pour choisir le type d'affichage des étapes courantes : titre ou échéance
+
+* Améliorer l'affichage des données de l'étape courante :
+  - lorsqu'elle n'est pas démarrée : marquer seulement "En attente de démarrage" (supprimer le label)
+  - ajouter la fin calculée de l'item
 * Gestion des items de liste (avec le nouveau fonction des steps)
-  * Classer les items par échéance
   * Mettre en rouge si une échéance est passée
-  * Classement :
-    - soit par échéance
-    - soit par ordre alphabétique
-    - soit par ordre défini pour la liste (sorted_items)
 
 * Pouvoir choisir le classement des listes :
   - par ordre alphabétique
