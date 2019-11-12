@@ -1,4 +1,4 @@
-* Reconstruire le listing des items après un changement d'étapes (quelles que soient les données des itemps)
+* Aggrandir la fenêtre
 
 
 * Améliorer l'affichage des données de l'étape courante :

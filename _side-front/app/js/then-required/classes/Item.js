@@ -637,8 +637,14 @@ class Item {
     divDesc.innerHTML   = this.description
     spanCreatedAt.innerHTML = this.created_at.toLocaleDateString('fr-FR')
     spanUpdatedAt.innerHTML = (this.updated_at||this.created_at).toLocaleDateString('fr-FR')
-    spanStartedAt.innerHTML = isStarted ? this.doneSteps[this.indexCurrentStep-1].date : "En attente"
     spanExpectedAt.innerHTML = isStarted ? this.expectedNext.toLocaleDateString('fr-FR') : '---'
+    // Pour le moment, il y a une erreur quand on vient de modifier quelque
+    // chose, soit les steps de la liste soit la step courante de l'item, et
+    // `this.doneSteps[this.indexCurrentStep-1]` est undefined. Il faut donc le
+    // tester avant de régler les informations
+    if ( this.doneSteps[this.indexCurrentStep-1] ){
+      spanStartedAt.innerHTML = isStarted ? this.doneSteps[this.indexCurrentStep-1].date : "En attente"
+    }
     // Construction des boutons
     var aucuneAction = true
     for(var iAction of [1,2,3]){
