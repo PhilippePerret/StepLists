@@ -1,4 +1,3 @@
-* Aggrandir la fenêtre
 
 
 * Améliorer l'affichage des données de l'étape courante :

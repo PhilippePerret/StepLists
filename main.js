@@ -37,7 +37,7 @@ function initialize () {
   // Création de la fenêtre
   function createWindow () {
     const windowOptions = {
-        width: 1520             // TODO Customisable
+        width: 1800             // TODO Customisable
       , minWidth: 680           // TODO Customisable
       , height: 840             // TODO Customisable
       , icon: __dirname+'/Imagerie/Icone/Icone-1024x1024.icns'
