@@ -240,8 +240,11 @@ function valOrNull(value, options){
   return value
 }
 
-function DGet(DOMId){
-  return document.querySelector(DOMId)
+function DGet(selector){
+  return document.querySelector(selector)
+}
+function DGetAll(selector){
+  return document.querySelectorAll(selector)
 }
 
 /**
