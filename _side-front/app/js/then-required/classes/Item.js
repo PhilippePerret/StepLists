@@ -114,23 +114,10 @@ class Item {
     Règle l'ordre d'affichage en fonction du type d'affichage voulu
   **/
   static defineSortingType(){
-    var method = this.sortTypeMenu.value
-    var dynValue = ( meth => {
-      switch(meth){
-        case 'alphabSorting':
-        case 'alphabInvSorting':
-        case 'customSorting':
-          return 'item.titreCurrentStep'
-        case 'echeanceSorting':
-          return 'item.human_echeance'
-        case 'echeanceFinSorting':
-          return 'item.human_echeanceFin'
-      }
-    })(method)
-    if ( method == 'customSorting' ){
+    if ( this.sortTypeMenu.value == 'customSorting' ){
       this.customSort()
     } else {
-      this.sortBy({sortMethod:method, dynValue:dynValue})
+      this.sortBy({sortMethod:this.sortTypeMenu.value})
     }
   }
 
@@ -139,8 +126,6 @@ class Item {
 
     @param params {Object} Table de classement :
       @param params.sortMethod    La méthode de classement à utiliser (cf. plus bas)
-      @param params.dynValue      La valeur dynamique pour afficher le nom
-                                  TODO Doit devenir obsolète lorsqu'un menu permettra de définir cette valeur
   **/
   static sortBy(params){
     if(undefined === params){
