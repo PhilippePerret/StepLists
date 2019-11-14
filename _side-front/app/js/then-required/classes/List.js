@@ -322,7 +322,8 @@ class List {
           // <= C'est la première étape
           // => On admet qu'elle n'ait pas de nombre de jours définis
           // TODO Vérifier que ça ne pose pas de problèmes dans les calculs ensuite…
-        }
+          step_data.nombre_jours = 0
+      }
       }
       steps.push(step_data)
     }
