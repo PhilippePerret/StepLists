@@ -21,6 +21,8 @@ Object.assign(UI,{
         default: return 'Panneau inconnu…'
       }
     })(panelName)
+    // En titre de page
+    DGet('head title').innerHTML = `Step-Lists — ${this.panelTitle.innerHTML}`
   }
 , showLists(){this.showPanel('listsPanel')}
 , hideCurrentPanel(){

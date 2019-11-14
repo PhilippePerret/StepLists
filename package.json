@@ -1,6 +1,6 @@
 {
   "name": "StepLists",
-  "productName": "StepListes",
+  "productName": "StepLists",
   "version": "0.0.2",
   "description": "Gestion des travaux par listes de tâches",
   "main": "main.js",

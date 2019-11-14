@@ -18,15 +18,21 @@ const DBTABLES_DATA_PATH    = '../_side-back/js/app/db/tables.js'
   Données secrètes pour la connexion à la base MySql
   (seulement si le fichier est défini)
 **/
-const DATA_MYSQL_ABSPATH  = './data/secret/mysql.js'
-const DATA_MYSQL_PATH     = '../data/secret/mysql.js'
+// const DATA_MYSQL_ABSPATH  = './data/secret/mysql.js'
+// const DATA_MYSQL_PATH     = '../data/secret/mysql.js'
+
+const DATA_MYSQL_PATH = path.join(App.homeDirectory,'.mysql.config')
+
+// console.log("DATA_MYSQL_PATH = ", DATA_MYSQL_PATH)
+
 var dataMySql = null
-if ( fs.existsSync(DATA_MYSQL_ABSPATH) ) {
+if ( fs.existsSync(DATA_MYSQL_PATH) ) {
   dataMySql = require(DATA_MYSQL_PATH).local
 } else {
-  console.warn("Pas de données MySql définies (pas de fichier '%s')", DATA_MYSQL_ABSPATH)
+  console.warn("Les données de configuration MySql doivent être définies dans un fichier `~/.mysql.config`. Consulter le mode d'emploi.")
 }
 const MYSQL_DATA = dataMySql
+
 
 const MySql2 = {
 
@@ -41,7 +47,7 @@ const MySql2 = {
   **/
   async execute(request, values, options){
     if ( ! MYSQL_DATA ) {
-      console.error("Désolé mais aucune données de connexion à la base de données MySql n'est définie. Les requêtes SQL sont impossibles.")
+      console.error("Désolé mais les données de connexion à la base de données MySql sont mal définies. Les requêtes SQL sont impossibles.")
       return null
     }
     if ( undefined === this._pool ) {
@@ -142,7 +148,7 @@ const MySql2 = {
 }
 Object.defineProperties(MySql2,{
 database:{
-    get(){return this._database || MYSQL_DATA.database}
+    get(){return this._database || MYSQL_DATA.database || remote.app.getName()}
   , set(v){this._database = v}
   }
 , defaultOptions:{
