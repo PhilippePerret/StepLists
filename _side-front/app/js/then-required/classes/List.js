@@ -366,8 +366,6 @@ class List {
     }
     if ( v ) {
       this._current = v
-      // On règle le titre partout où il est utilisé
-      DGet('.list-name').innerHTML = v.titre
       // On met le LI en exergue
       v.li.classList.add('selected')
       // On affiche les boutons qui permettent de gérer la liste

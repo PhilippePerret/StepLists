@@ -11,6 +11,16 @@ Object.assign(UI,{
       // en fonction de leur nombre et de la largeur du listing.
       Item.defineDimensions()
     }
+    // On applique le titre
+    this.panelTitle.innerHTML = ((panel)=>{
+      switch(panel){
+        case 'listsPanel':return "Listes suivies";
+        case 'itemsPanel':return `${List.current.titre}`;
+        case 'prefsPanel':return "Préférences";
+        case 'mainPanel':return 'Accueil';
+        default: return 'Panneau inconnu…'
+      }
+    })(panelName)
   }
 , showLists(){this.showPanel('listsPanel')}
 , hideCurrentPanel(){
@@ -23,6 +33,7 @@ Object.defineProperties(UI,{
         get(){return this._currentPanel || this.mainPanel}
       , set(v){this._currentPanel = v}
     }
+  , panelTitle:{get(){return DGet('h1#panel-title')}}
   , mainPanel:{get(){return DGet('div#main-panel')}}
   , listsPanel:{get(){return DGet('div#lists-panel')}}
   , itemsPanel:{get(){return DGet('div#items-panel')}}

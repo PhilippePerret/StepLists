@@ -27,6 +27,7 @@
         <button type="button" onclick="List.showAll.call(List)">Listes</button>
         <button type="button" onclick="Aide.toggle.call(Aide)">Aide</button>
       </div>
+      <h1 id="panel-title">TITRE PANNEAU</h1>
     </section>
 
     <section id="content">
@@ -34,7 +35,6 @@
         METTRE ICI LE CONTENU PRINCIPAL DE LA FENÊTRE
       -->
       <div id="main-panel">
-        <h1 class="panel-title">Panneau principal</h1>
         <ul>
           <li onclick="UI.showPanel('listsPanel')">Listes</li>
           <li onclick="UI.showPanel('prefsPanel')">Préférences</li>
@@ -48,8 +48,6 @@
         |
       -->
       <div id="lists-panel" class="noDisplay">
-        <h1 class="panel-title">Listes de travail</h1>
-
         <!--
           LISTE DES LISTES
         -->
@@ -117,7 +115,6 @@
         |
       -->
       <div id="items-panel" class="noDisplay">
-        <h1 class="panel-title"><span class="list-name">---</span></h1>
 
         <!-- LISTE DES ITEMS -->
         <div id="div-list-items" class="listbox-oslike">
@@ -233,10 +230,15 @@
 
 
 
+      <!--
+        |
+        | PANNEAU PRÉFÉRENCES
+        |
+      -->
       <div id="preferences-panel" class="noDisplay">
-        <h1 class="panel-title">Préférences</h1>
 
       </div>
+
     </section>
 
     <section id="footer">
