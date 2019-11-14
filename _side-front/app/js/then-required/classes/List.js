@@ -169,9 +169,6 @@ class List {
   static showSelectedList(ev){
     // On affiche le panneau des items
     UI.showPanel('itemsPanel')
-    // On renseigne l'identifiant de liste qui permettra de régler
-    // les list_id des nouveaux items ou items édités
-    DGet('#item-list_id').value = this.id
     this.current.buildItems()
     return stopEvent(ev)
   }
@@ -363,6 +360,7 @@ class List {
       // Par exemple au chargement
       DGet('div#div-lists .btns-selected').classList.add('hidden')
       this.btnMoins.classList.add('discret')
+      Item.form.querySelector('#item-list_id').value = ''
     }
     if ( v ) {
       this._current = v
