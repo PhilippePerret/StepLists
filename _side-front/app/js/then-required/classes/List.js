@@ -302,8 +302,8 @@ class List {
         Object.assign(step_data, {[step_prop]: li.querySelector(`.${step_prop}`).value})
       }
       if (step_data.titre!=""){
-        step_data.titre.length > 4 || errors.push(`L'étape "${step_data}" doit faire au moins 4 caractères…`)
-        step_data.titre.length < 255 || errors.push(`L'étape "${step_data}" est trop longue (254 caractères max)`)
+        step_data.titre.length >= 4 || errors.push(`L'étape "${step_data.titre}" doit faire au moins 4 caractères…`)
+        step_data.titre.length < 255 || errors.push(`L'étape "${step_data.titre}" est trop longue (254 caractères max)`)
       } else {
         errors.push(`Une étape doit avoir un titre !`)
       }
@@ -312,7 +312,17 @@ class List {
         step_data.nombre_jours = parseInt(step_data.nombre_jours, 10)
         step_data.nombre_jours < 999 || errors.push("Le nombre de jours ne peut excéder 999.")
       } else {
-        errors.push(`Il faut définir le nombre de jours par défaut d'une étape de travail.`)
+        // Si c'est la première étape, on admet une valeur vide ?
+        if ( steps.length ) {
+          // <= Il y a déjà des étapes (ce n'est pas la première)
+          // => le nombre de jours est obligatoire, on met 10 par défaut.
+          errors.warn(`Le nombre de jours par défaut de l'étape « ${step_data.titre} » n'est pas défini. Je mets 10.`)
+          step_data.nombre_jours = 10
+        } else {
+          // <= C'est la première étape
+          // => On admet qu'elle n'ait pas de nombre de jours définis
+          // TODO Vérifier que ça ne pose pas de problèmes dans les calculs ensuite…
+        }
       }
       steps.push(step_data)
     }
