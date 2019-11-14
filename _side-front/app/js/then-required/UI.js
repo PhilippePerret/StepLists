@@ -15,7 +15,7 @@ Object.assign(UI,{
     this.panelTitle.innerHTML = ((panel)=>{
       switch(panel){
         case 'listsPanel':return "Listes suivies";
-        case 'itemsPanel':return `${List.current.titre}`;
+        case 'itemsPanel':return `<button onclick="UI.showPanel.call(UI,'listsPanel')">◁</button> ${List.current.titre}`;
         case 'prefsPanel':return "Préférences";
         case 'mainPanel':return 'Accueil';
         default: return 'Panneau inconnu…'
