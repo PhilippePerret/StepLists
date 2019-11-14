@@ -341,7 +341,8 @@ class List {
 
     if (errors.length){
       console.error("Des erreurs sont survenues : ", errors.join(CR))
-      alert("Des erreurs sont survenues, je ne peux pas enregistrer la liste telle quelle. Consulter la console.")
+      alert("Des erreurs sont survenues, je ne peux pas enregistrer la liste telle quelle :\n\n• "+errors.join(CR+'• '))
+
       return false
     } else {
       console.log("List::provData est mis à ", provData)

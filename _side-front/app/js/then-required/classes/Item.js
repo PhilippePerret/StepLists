@@ -561,7 +561,7 @@ class Item {
 
     if (errors.length) {
       console.error("Des erreurs ont été trouvées : ", errors.join(CR))
-      alert("Des erreurs ont été trouvées (cf. la console)")
+      alert("Des erreurs ont été trouvées :\n\n• "+errors.join(CR+'• '))
       return false
     } else {
       return true
