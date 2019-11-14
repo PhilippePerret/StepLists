@@ -356,11 +356,13 @@ class List {
       this._current = v
       // On règle le titre partout où il est utilisé
       DGet('.list-name').innerHTML = v.titre
-      // On met le lit en exergue
+      // On met le LI en exergue
       v.li.classList.add('selected')
       // On affiche les boutons qui permettent de gérer la liste
       DGet('div#div-lists .btns-selected').classList.remove('hidden')
       this.btnMoins.classList.remove('discret')
+      // On règle l'id dans le formulaire de l'item
+      Item.form.querySelector('#item-list_id').value = v.id
       // On charge ses données si c'est nécessaire
       v.load()
     }
