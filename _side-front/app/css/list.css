@@ -15,6 +15,11 @@ form#list-form {
   background-color:white;
   opacity:0.9;
   position:fixed;
-  top:100px;
+  top:0px;
   left:20%;
+}
+
+form#list-form ul#list-steps {
+  max-height:208px;
+  overflow:auto;
 }

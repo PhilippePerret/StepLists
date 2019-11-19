@@ -427,6 +427,7 @@ class Item {
       obj.classList.add('noDisplay')
     }
   }
+
   /**
     Méthode appelée quand on sélectionne dans le menu une action à
     accomplir par le bouton +actionId+ de l'item édité
@@ -454,6 +455,7 @@ class Item {
     btnF.value = ""
     btnC.innerHTML = "Choisir…"
   }
+
   /**
     Méthode appelée quand on clique le bouton "Choisir…" pour choisir le
     fichier ou le dossier associé à un bouton d'action de l'item édité
@@ -647,7 +649,8 @@ class Item {
     if ( this.doneSteps[this.indexCurrentStep-1] ){
       spanStartedAt.innerHTML = isStarted ? this.doneSteps[this.indexCurrentStep-1].date : "En attente"
     }
-    // Construction des boutons
+
+    // Réglage des boutons
     var aucuneAction = true
     for(var iAction of [1,2,3]){
       var prop = `action${iAction}`
@@ -955,7 +958,6 @@ class Item {
     return this._echeancefin || defP(this,'_echeancefin',this.defineEcheance().echeanceFin)
   }
   get human_echeanceFin(){return humanDateFor(this.echeanceFin)}
-
 
   get action1Value(){return this._a1value}
   get action1Type(){return this._a1type}

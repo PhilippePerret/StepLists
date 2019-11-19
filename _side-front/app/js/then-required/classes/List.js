@@ -25,6 +25,7 @@ class List {
   static get idField(){return DGet('form#list-form input#list-id')}
   static get divSteps(){return this.form.querySelector('#listbox-list-steps')}
   static get stepsList(){return this.divSteps.querySelector('ul#list-steps')}
+  static get divInfos(){return this.panel.querySelector('#selected-list-infos')}
 
   /**
     Initialisation du panneau des listes
@@ -48,8 +49,25 @@ class List {
     btnAddStep.addEventListener('click',this.addStep.bind(this))
     btnSupStep.addEventListener('click',this.removeStep.bind(this))
 
+    // Surveillance du menu, dans le formulaire, pour choisir les actions
+    for(var i of [1,2,3]){
+      var racineId = `list-action${i}`
+      var selectId = `#${racineId}-type`
+      var selectObj = DGet(selectId)
+      selectObj.addEventListener('change', this.onChooseTypeAction.bind(this,i))
+      var btnChooseId = `#btn-choose-file-list-action${i}`
+      let btnChoose   = DGet(btnChooseId)
+      btnChoose.addEventListener('click',this.chooseActionFile.bind(this,i))
+    }
+
     // Le menu pour changer de type de classement
     this.sortTypeMenu.addEventListener('change', this.changeTypeClassement.bind(this))
+
+    // Observer les boutons d'action véritable, dans le bloc des infos, qui
+    // permettent de lancer l'action
+    this.divInfos.querySelector('#btn-list-action1').addEventListener('click',this.onClickActionButton.bind(this,1))
+    this.divInfos.querySelector('#btn-list-action2').addEventListener('click',this.onClickActionButton.bind(this,2))
+    this.divInfos.querySelector('#btn-list-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
 
     this.current = null
   }
@@ -143,6 +161,36 @@ class List {
     }
   }
 
+  /**
+    Méthode appelée quand on clique sur un bouton d'action
+  **/
+  static onClickActionButton(iAction, ev){
+    console.log("Action %d invoquée", iAction)
+    let actionType = this.current[`action${iAction}Type`]
+      , actionValue = this.current[`action${iAction}Value`]
+    var cmd
+    switch(actionType){
+      case 'file':
+      case 'folder':
+      case 'url':
+        cmd = `open "${actionValue}"`
+        break
+      default:
+        cmd = actionValue
+    }
+    cmd = cmd.replace(/\"/g,'\\"')
+    cmd = `bash -c ". ${App.homeDirectory}/.bash_profile; shopt -s expand_aliases\n${cmd}"`
+    console.log("Commande exécutée : %s", cmd)
+    try {
+      exec(cmd, (error, stdout)=>{
+        console.log(error, stdout)
+      })
+    } catch (e) {
+      console.error("Problème avec la commande '%s' : %s", cmd, e.message)
+    }
+    return stopEvent(ev)
+  }
+
 
   // Affichage du formulaire et placement du pointeur dans le
   // premier champ
@@ -158,6 +206,58 @@ class List {
     }
     for(prop of ['steps']){
       this.form.querySelector(`#list-${prop}`).innerHTML = ''
+    }
+  }
+
+  /**
+    Méthode appelée quand on sélectionne dans le menu une action à
+    accomplir par le bouton +actionId+ de l'item édité
+  **/
+  static onChooseTypeAction(actionId, ev){
+    // console.log("actionId = ", actionId)
+    let selectObj = DGet(`select#list-action${actionId}-type`)
+    // En fonction du choix, on affiche le bouton "choisir…" ou le champ de
+    // texte.
+    var btnChoose,valField
+    switch(selectObj.value){
+      case 'file':
+      case 'folder':
+        [btnChoose,valField] = [true,false]
+        break;
+      default:
+        [btnChoose,valField] = [false,true]
+    }
+    let btnC = DGet(`#btn-choose-file-list-action${actionId}`)
+    let btnF = DGet(`#list-action${actionId}`)
+    btnC.classList[btnChoose?'remove':'add']('noDisplay')
+    btnF.classList[valField?'remove':'add']('noDisplay')
+    // Dans tous le cas on initialise la valeur du champ de texte, qui peut
+    // contenir le path et le nom du bouton choisir
+    btnF.value = ""
+    btnC.innerHTML = "Choisir…"
+  }
+
+  /**
+    Méthode appelée quand on clique le bouton "Choisir…" pour choisir le
+    fichier ou le dossier associé à un bouton d'action de l'item édité
+  **/
+  static chooseActionFile(actionId, ev){
+    let selectObj = DGet(`select#list-action${actionId}-type`)
+    var choix
+    switch(selectObj.value){
+      case 'file':
+        choix  = chooseFile({message: `Fichier à ouvrir avec le bouton ${actionId} :`})
+        break;
+      case 'folder':
+        choix  = chooseFolder({message: `Dossier à ouvrir avec le bouton ${actionId} :`})
+        break;
+      default:
+        console.error("Impossible de traiter le choix %s…", selectObj.value)
+    }
+    DGet(`#list-action${actionId}`).value = choix || ''
+    if (choix) {
+      let btnChoose = DGet(`#btn-choose-file-list-action${actionId}`)
+      btnChoose.innerHTML = `Choisir "${path.basename(choix)}"`
     }
   }
 
@@ -288,9 +388,22 @@ class List {
       , errors = []
 
     // On récupère les données du formulaire
-    for(var prop of ['id','titre','description']){
+    for(var prop of ['id','titre','description','action1','action2','action3']){
       Object.assign(provData, {[prop]: DGet(`form#list-form #list-${prop}`).value.trim()})
     }
+
+    // Pour les actions
+    // Il faut ajouter le type aux actions si elles sont définies
+    for(var iAction of [1,2,3]){
+      var prop = `action${iAction}`
+        , type = DGet(`select#list-${prop}-type`).value
+      if ( fData[prop] == "" || type == 'none') {
+        fData[prop] = null
+      } else {
+        fData[prop] = `${type}::${fData[prop]}`
+      }
+    }
+
     // Pour les étapes
     var steps = []
     for (var li of this.form.querySelectorAll('#list-steps li')) {
@@ -376,10 +489,6 @@ class List {
     }
   }
 
-
-
-
-
   /** ---------------------------------------------------------------------
     *   INSTANCE
     *
@@ -403,8 +512,8 @@ class List {
     if ( this.data.stepsData ) {
       await this.saveSteps(this.data.stepsData)
     }
-    var req = "INSERT INTO lists (titre, description, stepsId, created_at) VALUES (?,?,?, NOW())"
-    var res = await MySql2.execute(req, [this.titre, this.description, this.stepsId])
+    var req = "INSERT INTO lists (titre, description, action1, action2, action3, stepsId, created_at) VALUES (?,?,?, NOW())"
+    var res = await MySql2.execute(req, [this.titre, this.description, this.action1, this.action2, this.action3, this.stepsId])
     this.data.id = await MySql2.lastInsertId()
     // Il faut aller définir le paramètre `list_id` des étapes
     var request = `UPDATE steps SET list_id = ${this.id} WHERE id IN (${this.stepsId})`
@@ -519,6 +628,27 @@ class List {
   // Méthode qui construit la liste dans la liste des listes
   build(){
     List.listing.appendChild(this.li)
+
+    // Réglage des boutons
+    var aucuneAction = true
+    for(var iAction of [1,2,3]){
+      var prop = `action${iAction}`
+      var actif = !! this[prop]
+      if ( actif ) aucuneAction = false
+      var btnAction = divInfos.querySelector(`#btn-list-${prop}`)
+      btnAction.classList[actif?'remove':'add']('noDisplay')
+      btnAction.innerHTML = ((actif,type,valeur)=>{
+        if (actif){
+          switch(type){
+            case 'file':    return `Ouvrir le fichier « ${path.basename(valeur)} »`; break;
+            case 'folder':  return `Ouvrir le dossier « ${path.basename(valeur)} »`; break;
+            case 'url':     return `Ouvrir l'URL « ${path.basename(valeur)} »`; break;
+            case 'code':    return `Jouer le code \`${valeur.substring(0,20)}…\``; break;
+          }
+        } else {return ''}
+      })(actif, this[`${prop}Type`], this[`${prop}Value`])
+    }
+
     this.observe()
   }
 
@@ -528,6 +658,7 @@ class List {
   observe(){
     this.li.addEventListener('click', this.onClick.bind(this))
     this.li.addEventListener('dblclick', this.onDblClick.bind(this))
+
   }
 
   async destroy(){
@@ -586,6 +717,39 @@ class List {
     DGet('#list-originalStepsList').value = this.stepsId
     // Il faut construire les étapes (il y en a toujours au moins une)
     this.steps.map(step => step.build())
+
+    // Les actions
+    for(var iAction of [1,2,3]){
+      prop = `action${iAction}`
+      if ( this[prop] ) {
+        // <= L'action est définie
+        // => Il faut la régler
+        var typeA = this[`${prop}Type`]
+        var valueA = this[`${prop}Value`]
+        var btnChoose = DGet(`#btn-choose-file-list-${prop}`)
+        var codeField = DGet(`#list-${prop}`)
+        // 1. Régler son type dans le menu
+        Item.form.querySelector(`#list-${prop}-type`).value = typeA
+        // 2. Afficher le champ d'édition voulu
+        // 3. Régler la valeur du champ d'édition
+        var btn, field
+        switch(typeA){
+          case 'file':
+          case 'folder':
+            [btn,field] = [true,false]
+            btnChoose.innerHTML = `Choisir ${path.basename(valueA)}`
+            break
+          default:
+            [btn,field] = [false,true]
+        }
+        // Dans tous les cas, même pour un fichier, on met
+        // la valeur dans le champ
+        codeField.value = valueA
+        btnChoose.classList[btn?'remove':'add']('noDisplay')
+        codeField.classList[field?'remove':'add']('noDisplay')
+      }
+    }
+
   }
 
   // Retourne true si la liste des étapes a été modifiée
@@ -744,6 +908,23 @@ class List {
     // console.log("steps loadées : ", this.dataSteps)
   }
 
+  get action1Value(){return this._a1value}
+  get action1Type(){return this._a1type}
+  get action2Value(){return this._a2value}
+  get action2Type(){return this._a2type}
+  get action3Value(){return this._a3value}
+  get action3Type(){return this._a3type}
+  decomposeTypeAndValueInActions(){
+    for(var iAction of [1,2,3]){
+      var prop = `action${iAction}`
+      if (this[prop]){
+        [this[`_a${iAction}type`],this[`_a${iAction}value`]] = this[prop].split('::')
+      } else {
+        delete this[`_a${iAction}type`]
+        delete this[`_a${iAction}value`]
+      }
+    }
+  }
 
   /**
     | Méthodes de données fixe
@@ -753,6 +934,12 @@ class List {
   set titre(v){this.data.titre = v}
   get description(){return this.data.description}
   set description(v){this.data.description = v}
+  get action1(){return this.data.action1}
+  set action1(v){this.data.action1 = v}
+  get action2(){return this.data.action2}
+  set action2(v){this.data.action2 = v}
+  get action3(){return this.data.action3}
+  set action3(v){this.data.action3 = v}
   get sorted_items(){return this.data.sorted_items}
   set sorted_items(v){this.data.sorted_items = v}
   get type(){return this.data.type}

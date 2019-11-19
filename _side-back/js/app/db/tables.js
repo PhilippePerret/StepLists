@@ -14,6 +14,9 @@ const DB_Tables = [
         , {name:'description',  type:'TEXT'}
         , {name:'type',         type:'INTEGER(1)'}
         , {name:'stepsId',      type:'TINYTEXT'}//Ids séparés par des espaces
+        , {name:'action1',      type:'TEXT'}
+        , {name:'action2',      type:'TEXT'}
+        , {name:'action3',      type:'TEXT'}
         , {name:'sorted_items', type:'TEXT'}
         , {name:'created_at',   type:'DATE'}
         , {name:'updated_at',   type:'DATE'}

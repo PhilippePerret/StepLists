@@ -1,3 +1,8 @@
+* TOUT A ÉTÉ INSTALLÉ POUR LES ACTIONS DES LISTS, il faut corriger les bugs.
+
+* Afficher les infos de la liste lorsqu'on la sélectionne (cela fait apparaitre les boutons)
+* Observers les 3 boutons actions du formulaire de list (comme les boutons du formulaire d'item)
+
 * Quand on a actualisé la liste avec le bouton "Actualiser la liste" du panneau des items, il faut remasquer le bouton
 
 * Améliorer l'affichage des données de l'étape courante :
