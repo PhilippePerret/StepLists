@@ -12,17 +12,23 @@ Object.assign(UI,{
       Item.defineDimensions()
     }
     // On applique le titre
-    this.panelTitle.innerHTML = ((panel)=>{
+    var titre = ((panel)=>{
       switch(panel){
         case 'listsPanel':return "Listes suivies";
-        case 'itemsPanel':return `<button onclick="UI.showPanel.call(UI,'listsPanel')">◁</button> ${List.current.titre}`;
+        case 'itemsPanel':return List.current.titre;
         case 'prefsPanel':return "Préférences";
         case 'mainPanel':return 'Accueil';
         default: return 'Panneau inconnu…'
       }
     })(panelName)
+
     // En titre de page
-    DGet('head title').innerHTML = `Step-Lists — ${this.panelTitle.innerHTML}`
+    DGet('head title').innerHTML = `Step-Lists — ${titre}`
+
+    if (panelName == 'itemsPanel'){
+      titre = `<button onclick="UI.showPanel.call(UI,'listsPanel')">◁</button> ${titre}`
+    }
+    this.panelTitle.innerHTML = titre
   }
 , showLists(){this.showPanel('listsPanel')}
 , hideCurrentPanel(){
