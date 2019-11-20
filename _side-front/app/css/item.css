@@ -46,6 +46,7 @@ form#item-form {
   position:fixed;
   top:100px;
   left:20%;
+  z-index:100;
 }
 
 /*

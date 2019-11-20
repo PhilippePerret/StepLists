@@ -13,10 +13,11 @@ div#div-lists ul#lists li {
  */
 form#list-form {
   background-color:white;
-  opacity:0.9;
+  opacity:0.95;
   position:fixed;
   top:0px;
   left:20%;
+  z-index:100;
 }
 
 form#list-form ul#list-steps {
