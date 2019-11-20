@@ -19,6 +19,7 @@ div#div-list-items.listbox-oslike ul#item-list li.li-item span.titre {
   overflow: hidden;
   white-space: nowrap;
   font-weight:bold;
+  padding-left:8px;
 }
 div#div-list-items.listbox-oslike ul#item-list li.li-item span.step {
   display:inline-block;
