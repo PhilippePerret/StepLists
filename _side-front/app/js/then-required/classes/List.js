@@ -598,8 +598,8 @@ class List {
           Object.assign(my._items, {[instanceItem.id]: instanceItem})
         }
         my.isLoaded = true
-        ok()
       }
+      ok()
     })
   }
 
