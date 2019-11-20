@@ -56,8 +56,9 @@ class Item {
 
     // --- Les boutons d'action sur la sélection ---
     // Pour éditer l'item sélectionné
-    var btnEditItem = this.panel.querySelector('.btn-edit-item')
-    btnEditItem.addEventListener('click',this.editSelectedItem.bind(this))
+    // var btnEditItem = this.panel.querySelector('.btn-edit-item')
+    // btnEditItem.addEventListener('click',this.editCurrent.bind(this))
+    DGetAll('.btn-edit-item').forEach(obj => obj.addEventListener('click',this.editCurrent.bind(this)))
     // Pour faire avancer l'item (+ 1 étape)
     var btnNextStep = this.buttonsSelect.querySelector('.btn-next-step')
     btnNextStep.addEventListener('click',this.SelectedToNextStep.bind(this))
@@ -510,7 +511,7 @@ class Item {
   }
 
   // Pour éditer l'item sélectionné
-  static editSelectedItem(ev){
+  static editCurrent(ev){
     // console.log("Ajout d'item demandé")
     this.showForm()
     this.current.edit()

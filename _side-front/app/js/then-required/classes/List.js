@@ -31,15 +31,17 @@ class List {
     Initialisation du panneau des listes
   **/
   static init(){
-    let btnEdit   = DGet('div#div-lists div.btn-edit')
-      , btnShow   = DGet('div#div-lists div.btn-show')
+    let btnShow   = DGet('div#div-lists div.btn-show')
+      // , btnEdit   = DGet('div#div-lists div.btn-edit')
       , divSteps  = this.panel.querySelector('#listbox-list-steps')
       , btnAddStep = divSteps.querySelector('.btn-plus')
       , btnSupStep = divSteps.querySelector('.btn-moins')
     this.btnPlus.addEventListener('click',this.addList.bind(this))
     this.btnMoins.addEventListener('click',this.removeSelectedList.bind(this))
-    btnEdit.addEventListener('click',this.editSelectedList.bind(this))
+    // btnEdit.addEventListener('click',this.editCurrent.bind(this))
     btnShow.addEventListener('click',this.showSelectedList.bind(this))
+
+    DGetAll('.btn-edit-list').forEach(obj => obj.addEventListener('click',this.editCurrent.bind(this)))
 
     // Les éléments du formulaire
     this.btnSaveList.addEventListener('click', this.saveList.bind(this))
@@ -284,7 +286,7 @@ class List {
   /**
     Méthode appelée quand on veut éditer une liste (bouton "📝")
   **/
-  static editSelectedList(ev){
+  static editCurrent(ev){
     this.showForm()
     // Mettre les valeurs de la liste dans les champs
     this.current.edit()
@@ -539,7 +541,6 @@ class List {
     Affiche les données de la liste
   **/
   show(){
-    console.log("Affichage des données de la liste")
     var divInfos = List.divInfos
       , divTitre        = DGet('.selected-list-titre', divInfos)
       , divDesc         = DGet('.selected-list-description', divInfos)
