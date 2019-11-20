@@ -843,7 +843,7 @@ class List {
         var btnChoose = DGet(`#btn-choose-file-list-${prop}`)
         var codeField = DGet(`#list-${prop}`)
         // 1. Régler son type dans le menu
-        Item.form.querySelector(`#list-${prop}-type`).value = typeA
+        List.form.querySelector(`#list-${prop}-type`).value = typeA
         // 2. Afficher le champ d'édition voulu
         // 3. Régler la valeur du champ d'édition
         var btn, field
