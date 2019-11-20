@@ -19,6 +19,7 @@
 <link rel="stylesheet" href="app/css/list.css" />
 <link rel="stylesheet" href="app/css/macos-like.css" />
 <link rel="stylesheet" href="app/css/step.css" />
+<link rel="stylesheet" href="app/css/ui.css" />
   </head>
   <body>
 
@@ -146,14 +147,20 @@
           </div>
         </form>
 
-        <div id="selected-list-infos" class="noDisplay">
-          <div class="selected-list-titre"></div>
-          <fieldset class="selected-item-buttons">
+        <div id="selected-list-infos" class="noDisplay selected-infos">
+          <div class="selected-list-titre selected-titre"></div>
+          <fieldset class="selected-list-buttons selected-buttons">
             <legend>Actions</legend>
-            <button type="button" id="list-btn-action1" class="noDisplay"></button>
-            <button type="button" id="list-btn-action2" class="noDisplay"></button>
-            <button type="button" id="list-btn-action3" class="noDisplay"></button>
+            <button type="button" id="btn-list-action1" class="noDisplay"></button>
+            <button type="button" id="btn-list-action2" class="noDisplay"></button>
+            <button type="button" id="btn-list-action3" class="noDisplay"></button>
             <div class="no-action noDisplay explication">Pour définir les 3 actions possibles, éditer la liste.</div>
+          </fieldset>
+          <div class="selected-list-description selected-description"></div>
+          <fieldset class="dates">
+            <legend>Informations temporelles</legend>
+            <label>Créée le </label><span class="date created_at"></span>
+            <label>, modifiée le </label><span class="date updated_at"></span>
           </fieldset>
 
         </div>
@@ -198,13 +205,13 @@
         </div>
 
         <!-- SECTION DES INFOS DE L'ITEM SÉLECTIONNÉ  -->
-        <div id="selected-item-infos" class="noDisplay">
-          <div class="selected-item-titre"></div>
-          <fieldset class="selected-item-buttons">
+        <div id="selected-item-infos" class="noDisplay selected-infos">
+          <div class="selected-item-titre selected-titre"></div>
+          <fieldset class="selected-item-buttons selected-buttons">
             <legend>Actions</legend>
-            <button type="button" id="btn-action1" class="noDisplay"></button>
-            <button type="button" id="btn-action2" class="noDisplay"></button>
-            <button type="button" id="btn-action3" class="noDisplay"></button>
+            <button type="button" id="btn-item-action1" class="noDisplay"></button>
+            <button type="button" id="btn-item-action2" class="noDisplay"></button>
+            <button type="button" id="btn-item-action3" class="noDisplay"></button>
             <div class="no-action noDisplay explication">Pour définir les 3 actions possibles, éditer l'item en double-cliquant sur son nom dans la liste.</div>
           </fieldset>
           <fieldset class="last-step">
@@ -212,7 +219,7 @@
             <label>Démarrée le </label><span class="date started_at"></span>
             <label>, attendue pour le </label><span class="date expected_at"></span>
           </fieldset>
-          <div class="selected-item-description"></div>
+          <div class="selected-item-description selected-description"></div>
           <div>
             <label>Créé le </label><span class="date created_at"></span>
             <label>, modifié le </label><span class="date updated_at"></span>

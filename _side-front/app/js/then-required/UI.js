@@ -26,7 +26,7 @@ Object.assign(UI,{
     DGet('head title').innerHTML = `Step-Lists — ${titre}`
 
     if (panelName == 'itemsPanel'){
-      titre = `<button onclick="UI.showPanel.call(UI,'listsPanel')">◁</button> ${titre}`
+      titre = `<button onclick="UI.showPanel.call(UI,'listsPanel')" style="font-size:15.7pt;">◁</button> ${titre}`
     }
     this.panelTitle.innerHTML = titre
   }

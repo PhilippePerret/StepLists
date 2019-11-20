@@ -1,0 +1,35 @@
+/*
+    Section des infos de l'item ou de la liste courant
+*/
+div.selected-infos {
+  border:1px solid #CCCCCC;
+  border-radius:1em;
+  padding:1em;
+  margin-left:3em;
+  display:inline-block;
+}
+div.selected-infos > div,
+div.selected-infos > fieldset {
+  margin-top:1em;
+}
+div.selected-infos label {
+  font-style:italic;
+  color: #777777;
+}
+div.selected-infos div.selected-titre {
+  font-size:1.4em;
+}
+div.selected-infos div.selected-description {
+  font-size:0.9em;
+  margin-left:2em;
+  font-style:italic;
+}
+div.selected-infos .selected-buttons button {
+  font-size:0.9em;
+  font-weight:bold;
+}
+
+div.selected-infos fieldset.selected-butons {
+  display:inline-block;
+  margin-right:1em;
+}

@@ -70,9 +70,9 @@ class Item {
 
     // Observer les boutons d'action véritable, dans le bloc des infos, qui
     // permettent de lancer l'action
-    this.divInfos.querySelector('#btn-action1').addEventListener('click',this.onClickActionButton.bind(this,1))
-    this.divInfos.querySelector('#btn-action2').addEventListener('click',this.onClickActionButton.bind(this,2))
-    this.divInfos.querySelector('#btn-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
+    this.divInfos.querySelector('#btn-item-action1').addEventListener('click',this.onClickActionButton.bind(this,1))
+    this.divInfos.querySelector('#btn-item-action2').addEventListener('click',this.onClickActionButton.bind(this,2))
+    this.divInfos.querySelector('#btn-item-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
 
     // Tous les boutons permettant de sauver la liste
     this.btnsUpdateList.forEach(btn => {
@@ -628,9 +628,9 @@ class Item {
     var divInfos = Item.divInfos
       , divTitre    = divInfos.querySelector('.selected-item-titre')
       , divDesc     = divInfos.querySelector('.selected-item-description')
-      , btnAction1  = divInfos.querySelector('.btn-action1')
-      , btnAction2  = divInfos.querySelector('.btn-action2')
-      , btnAction3  = divInfos.querySelector('.btn-action3')
+      , btnAction1  = divInfos.querySelector('.btn-item-action1')
+      , btnAction2  = divInfos.querySelector('.btn-item-action2')
+      , btnAction3  = divInfos.querySelector('.btn-item-action3')
       , spanCreatedAt   = divInfos.querySelector('.date.created_at')
       , spanStartedAt   = divInfos.querySelector('.date.started_at')
       , spanUpdatedAt   = divInfos.querySelector('.date.updated_at')
@@ -656,7 +656,7 @@ class Item {
       var prop = `action${iAction}`
       var actif = !! this[prop]
       if ( actif ) aucuneAction = false
-      var btnAction = divInfos.querySelector(`#btn-${prop}`)
+      var btnAction = divInfos.querySelector(`#btn-item-${prop}`)
       btnAction.classList[actif?'remove':'add']('noDisplay')
       btnAction.innerHTML = ((actif,type,valeur)=>{
         if (actif){

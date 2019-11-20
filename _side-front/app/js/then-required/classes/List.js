@@ -65,9 +65,9 @@ class List {
 
     // Observer les boutons d'action véritable, dans le bloc des infos, qui
     // permettent de lancer l'action
-    this.divInfos.querySelector('#btn-list-action1').addEventListener('click',this.onClickActionButton.bind(this,1))
-    this.divInfos.querySelector('#btn-list-action2').addEventListener('click',this.onClickActionButton.bind(this,2))
-    this.divInfos.querySelector('#btn-list-action3').addEventListener('click',this.onClickActionButton.bind(this,3))
+    DGet('#btn-list-action1',this.divInfos).addEventListener('click',this.onClickActionButton.bind(this,1))
+    DGet('#btn-list-action2',this.divInfos).addEventListener('click',this.onClickActionButton.bind(this,2))
+    DGet('#btn-list-action3',this.divInfos).addEventListener('click',this.onClickActionButton.bind(this,3))
 
     this.current = null
   }
@@ -384,15 +384,80 @@ class List {
     que ce soit pour l'édition ou la création
   **/
   static checkDataValidity(){
-    var provData = {}
+    var fData = this.getFormValues()
       , errors = []
 
-    // On récupère les données du formulaire
-    for(var prop of ['id','titre','description','action1','action2','action3']){
-      Object.assign(provData, {[prop]: DGet(`form#list-form #list-${prop}`).value.trim()})
+
+    // Check des étapes
+    if ( fData.stepsData.length ) {
+      for (var step_data of fData.stepsData) {
+        if (step_data.titre!=""){
+          step_data.titre.length >= 4 || errors.push(`L'étape "${step_data.titre}" doit faire au moins 4 caractères…`)
+          step_data.titre.length < 255 || errors.push(`L'étape "${step_data.titre}" est trop longue (254 caractères max)`)
+        } else {
+          errors.push(`Une étape doit avoir un titre !`)
+        }
+        step_data.description.length < 255 || errors.push(`L'étape "${step_data}" a une description trop longue (254 caractères max)`)
+        if (step_data.nombre_jours!=""){
+          step_data.nombre_jours = parseInt(step_data.nombre_jours, 10)
+          step_data.nombre_jours < 999 || errors.push("Le nombre de jours ne peut excéder 999.")
+        } else {
+          // Si c'est la première étape, on admet une valeur vide ?
+          if ( steps.length ) {
+            // <= Il y a déjà des étapes (ce n'est pas la première)
+            // => le nombre de jours est obligatoire, on met 10 par défaut.
+            errors.warn(`Le nombre de jours par défaut de l'étape « ${step_data.titre} » n'est pas défini. Je mets 10.`)
+            step_data.nombre_jours = 10
+          } else {
+            // <= C'est la première étape
+            // => On admet qu'elle n'ait pas de nombre de jours définis
+            // TODO Vérifier que ça ne pose pas de problèmes dans les calculs ensuite…
+            step_data.nombre_jours = 0
+          }
+        }
+      }
+    } else {
+      // Aucune étape définie
+      errors.push("Il faut définir les étapes de travail (au moins une) !")
     }
 
+    // Le titre
+    // --------
+    fData.titre || errors.push("Le titre est requis")
+    if (fData.titre){
+      fData.titre.length > 3 || errors.push("Le titre doit être au moins de 4 lignes.")
+      fData.titre.length < 201 || errors.push("Le titre est trop long (200 lettres max)")
+    }
+
+    // La description
+    // --------------
+    fData.description.length < 65000 || errors.push("La description est trop longue (65000 caractères max)")
+
+    if (errors.length){
+      console.error("Des erreurs sont survenues : ", errors.join(CR))
+      alert("Des erreurs sont survenues, je ne peux pas enregistrer la liste telle quelle :\n\n• "+errors.join(CR+'• '))
+      return false
+    } else {
+      console.log("List::provData est mis à ", fData)
+      this.provData = fData
+      return true
+    }
+  }
+
+  static getFormValues(){
+    var fData = {}
+    // On récupère les données du formulaire
+    for(var prop of ['id','titre','description','action1','action2','action3']){
+      Object.assign(fData, {[prop]: DGet(`form#list-form #list-${prop}`).value.trim()})
+    }
+
+    // Identifiant (ou non)
+    // -----------
+    if ( fData.id == ''){delete fData.id}
+    else { fData.id = parseInt(fData.id,10)}
+
     // Pour les actions
+    // ----------------
     // Il faut ajouter le type aux actions si elles sont définies
     for(var iAction of [1,2,3]){
       var prop = `action${iAction}`
@@ -405,61 +470,20 @@ class List {
     }
 
     // Pour les étapes
+    // ---------------
+    // ie `steps` de la liste
     var steps = []
     for (var li of this.form.querySelectorAll('#list-steps li')) {
       var step_data = {id:parseInt(li.getAttribute('data-id'),10)}
       for (var step_prop of ['titre','description','nombre_jours']){
         Object.assign(step_data, {[step_prop]: li.querySelector(`.${step_prop}`).value})
       }
-      if (step_data.titre!=""){
-        step_data.titre.length >= 4 || errors.push(`L'étape "${step_data.titre}" doit faire au moins 4 caractères…`)
-        step_data.titre.length < 255 || errors.push(`L'étape "${step_data.titre}" est trop longue (254 caractères max)`)
-      } else {
-        errors.push(`Une étape doit avoir un titre !`)
-      }
-      step_data.description.length < 255 || errors.push(`L'étape "${step_data}" a une description trop longue (254 caractères max)`)
-      if (step_data.nombre_jours!=""){
-        step_data.nombre_jours = parseInt(step_data.nombre_jours, 10)
-        step_data.nombre_jours < 999 || errors.push("Le nombre de jours ne peut excéder 999.")
-      } else {
-        // Si c'est la première étape, on admet une valeur vide ?
-        if ( steps.length ) {
-          // <= Il y a déjà des étapes (ce n'est pas la première)
-          // => le nombre de jours est obligatoire, on met 10 par défaut.
-          errors.warn(`Le nombre de jours par défaut de l'étape « ${step_data.titre} » n'est pas défini. Je mets 10.`)
-          step_data.nombre_jours = 10
-        } else {
-          // <= C'est la première étape
-          // => On admet qu'elle n'ait pas de nombre de jours définis
-          // TODO Vérifier que ça ne pose pas de problèmes dans les calculs ensuite…
-          step_data.nombre_jours = 0
-      }
-      }
       steps.push(step_data)
-    }
-    steps.length > 0 || errors.push("Il faut définir les étapes de travail (au moins une) !")
-    provData.stepsData = steps
+    }// fin de boucle sur tous les LI d'étape
+    fData.stepsData = steps
 
-    if ( provData.id == ''){delete provData.id}
-    else { provData.id = parseInt(provData.id,10)}
 
-    provData.titre || errors.push("Le titre est requis")
-    if (provData.titre){
-      provData.titre.length > 3 || errors.push("Le titre doit être au moins de 4 lignes.")
-      provData.titre.length < 201 || errors.push("Le titre est trop long (200 lettres max)")
-    }
-    provData.description.length < 65000 || errors.push("La description est trop longue (65000 caractères max)")
-
-    if (errors.length){
-      console.error("Des erreurs sont survenues : ", errors.join(CR))
-      alert("Des erreurs sont survenues, je ne peux pas enregistrer la liste telle quelle :\n\n• "+errors.join(CR+'• '))
-
-      return false
-    } else {
-      console.log("List::provData est mis à ", provData)
-      this.provData = provData
-      return true
-    }
+    return fData
   }
 
   // L'instance List courante
@@ -467,6 +491,8 @@ class List {
   static set current(v){
     if (this._current){
       this._current.li.classList.remove('selected')
+      // On masque le div des infos
+      this.divInfos.classList.add('noDisplay')
       delete this._current
     }
     if (!this.current){
@@ -484,8 +510,11 @@ class List {
       this.btnMoins.classList.remove('discret')
       // On règle l'id dans le formulaire de l'item
       Item.form.querySelector('#item-list_id').value = v.id
-      // On charge ses données si c'est nécessaire
-      v.load()
+      // On charge ses données si c'est nécessaire et on les affiche (surtout
+      // pour avoir les boutons)
+      v.load().then(v.show.bind(v))
+      // On affiche le div des infos
+      this.divInfos.classList.remove('noDisplay')
     }
   }
 
@@ -497,11 +526,94 @@ class List {
     this.data = data
     // console.log("Données liste à l'instanciation : ", data)
 
+    // Pour décomposer les données des actions boutons
+    this.decomposeTypeAndValueInActions()
+
     // Table pour enregistrer les changements qui ne seront enregistrés (avec
     // la méthode `saveChanges`) seulement quand un bouton "Actualiser la liste"
     // sera cliquée
     this.unsavedChanges = {}
   }
+
+  /**
+    Affiche les données de la liste
+  **/
+  show(){
+    console.log("Affichage des données de la liste")
+    var divInfos = List.divInfos
+      , divTitre        = DGet('.selected-list-titre', divInfos)
+      , divDesc         = DGet('.selected-list-description', divInfos)
+      , btnAction1      = DGet('.btn-list-action1', divInfos)
+      , btnAction2      = DGet('.btn-list-action2', divInfos)
+      , btnAction3      = DGet('.btn-list-action3', divInfos)
+      , spanCreatedAt   = DGet('.date.created_at', divInfos)
+      , spanUpdatedAt   = DGet('.date.updated_at', divInfos)
+
+    divTitre.innerHTML  = this.titre
+    divDesc.innerHTML   = this.description
+    spanCreatedAt.innerHTML = this.created_at.toLocaleDateString('fr-FR')
+    spanUpdatedAt.innerHTML = (this.updated_at||this.created_at).toLocaleDateString('fr-FR')
+
+    // Réglage des boutons d'action
+    var aucuneAction = true
+    for(var iAction of [1,2,3]){
+      var prop = `action${iAction}`
+      var actif = !! this[prop]
+      if ( actif ) aucuneAction = false
+      var btnAction = divInfos.querySelector(`#btn-list-${prop}`)
+      btnAction.classList[actif?'remove':'add']('noDisplay')
+      btnAction.innerHTML = ((actif,type,valeur)=>{
+        if (actif){
+          switch(type){
+            case 'file':    return `Ouvrir le fichier « ${path.basename(valeur)} »`; break;
+            case 'folder':  return `Ouvrir le dossier « ${path.basename(valeur)} »`; break;
+            case 'url':     return `Ouvrir l'URL « ${path.basename(valeur)} »`; break;
+            case 'code':    return `Jouer le code \`${valeur.substring(0,20)}…\``; break;
+          }
+        } else {return ''}
+      })(actif, this[`${prop}Type`], this[`${prop}Value`])
+    }
+    // Visibilité du texte d'aide
+    DGet('.no-action',divInfos).classList[aucuneAction?'remove':'add']('noDisplay')
+
+  }
+
+  /**
+    Pour relever tous les items de la liste et toutes ses étapes
+    - Relève des étapes
+    - Relève des items et instanciations
+  **/
+  async load(){
+    const my = this
+    return new Promise(async (ok,ko)=>{
+      if (!my.isLoaded){
+        // On charge les étapes
+        await my.loadSteps()
+        // On charge les items et on en fait des instances
+        my._items = {}
+        var items = await MySql2.execute('SELECT * FROM items WHERE list_id = ?', [my.id])
+        for(var dataItem of items){
+          var instanceItem = new Item(dataItem)
+          Object.assign(my._items, {[instanceItem.id]: instanceItem})
+        }
+        my.isLoaded = true
+        ok()
+      }
+    })
+  }
+
+  /**
+    Pour tout recharger (p.e. après un update, pour être sûr d'avoir
+    les dernières valeurs)
+  **/
+  async reload(){
+    for(var prop of ['_items','_steps','_sorted_items','_firstecheance','_firstecheancefin','_li','modified','dataSteps','_li','oldStepsId']){
+      delete this[prop]
+    }
+    this.isLoaded = false
+    await this.load()
+  }
+
 
   // Méthode qui crée la liste
   async create(){
@@ -532,6 +644,7 @@ class List {
   }
   async afterUpdate(){
     await this.reload()
+    this.decomposeTypeAndValueInActions()
     delete this._echeance
     delete this._echeanceFin
     // S'il y a des items dans cette liste et que les étapes ont été
@@ -837,35 +950,8 @@ class List {
     } return this._li
   }
 
-  /**
-    Pour tout recharger (p.e. après un update, pour être sûr d'avoir
-    les dernières valeurs)
-  **/
-  async reload(){
-    for(var prop of ['_items','_steps','_sorted_items','_firstecheance','_firstecheancefin','_li','modified','dataSteps','_li','oldStepsId']){
-      delete this[prop]
-    }
-    this.isLoaded = false
-    await this.load()
-  }
-  /**
-    Pour relever tous les items de la liste et toutes ses étapes
-    - Relève des étapes
-    - Relève des items et instanciations
-  **/
-  async load(){
-    if (this.isLoaded) return
-    // On charge les étapes
-    await this.loadSteps()
-    // On charge les items et on en fait des instances
-    this._items = {}
-    var items = await MySql2.execute('SELECT * FROM items WHERE list_id = ?', [this.id])
-    for(var dataItem of items){
-      var instanceItem = new Item(dataItem)
-      Object.assign(this._items, {[instanceItem.id]: instanceItem})
-    }
-    this.isLoaded = true
-  }
+
+
   /**
     | Méthodes de données volatiles
   **/
