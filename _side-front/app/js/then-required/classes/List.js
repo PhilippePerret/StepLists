@@ -625,7 +625,16 @@ class List {
     if ( this.data.stepsData ) {
       await this.saveSteps(this.data.stepsData)
     }
-    var req = "INSERT INTO lists (titre, description, action1, action2, action3, stepsId, created_at) VALUES (?,?,?, NOW())"
+
+    // Pour être sûr d'avoir le bon nombre de '?', on procède comme ça, avec
+    // une liste qu'on pourra modifier
+    var cols = ['created_at']
+    var ints = ['NOW()']
+    for (var col of ['titre','description','action1','action2','action3','stepsId']){
+      cols.push(col)
+      ints.push('?')
+    }
+    var req = `INSERT INTO lists (${cols.join(',')}) VALUES (${ints.join(', ')})`
     var res = await MySql2.execute(req, [this.titre, this.description, this.action1, this.action2, this.action3, this.stepsId])
     this.data.id = await MySql2.lastInsertId()
     // Il faut aller définir le paramètre `list_id` des étapes
