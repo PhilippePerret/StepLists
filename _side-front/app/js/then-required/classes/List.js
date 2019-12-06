@@ -758,7 +758,7 @@ class List {
       var prop = `action${iAction}`
       var actif = !! this[prop]
       if ( actif ) aucuneAction = false
-      var btnAction = divInfos.querySelector(`#btn-list-${prop}`)
+      var btnAction = this.divInfos.querySelector(`#btn-list-${prop}`)
       btnAction.classList[actif?'remove':'add']('noDisplay')
       btnAction.innerHTML = ((actif,type,valeur)=>{
         if (actif){
